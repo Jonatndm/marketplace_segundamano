@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace/screens/chat_list_screen.dart';
 import 'package:marketplace/screens/product_publish.dart';
 import 'package:marketplace/screens/profile_screen.dart';
 import 'package:marketplace/widgets/home_content.dart';
@@ -14,6 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     HomeContent(),
     PublishProductScreen(),
+    ChatListScreen(),
     ProfileScreen(),
   ];
 
@@ -24,14 +26,17 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Productos de Segunda Mano'),
         automaticallyImplyLeading: false,
       ),
-      body: _screens[_currentIndex], // Muestra la pantalla actual
+      body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex, // Índice seleccionado
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
-            _currentIndex = index; // Cambia la pantalla al tocar un ícono
+            _currentIndex = index;
           });
         },
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -40,6 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.add),
             label: 'Vender',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

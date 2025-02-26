@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mi Perfil'),
+        title: Text('Mis Chats'),
         automaticallyImplyLeading: false,
       ),
       body: Center(
-        child: Text('Aquí puedes ver y editar tu perfil.'),
+        child: Text('Aquí puedes ver la lista de Chats.'),
       ),
     );
   }

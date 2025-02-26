@@ -35,8 +35,6 @@ class ProductService {
       Uri.parse('$baseUrl/products/seller/$sellerId'),
     );
 
-    print(response.statusCode);
-
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);
       if (data.containsKey('user') && data['user'] != null) {

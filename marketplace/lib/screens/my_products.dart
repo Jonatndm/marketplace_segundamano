@@ -6,6 +6,7 @@ class MyProductsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Mis Productos'),
+        automaticallyImplyLeading: false,
       ),
       body: Center(
         child: Text('Aquí puedes ver los productos que has publicado.'),
