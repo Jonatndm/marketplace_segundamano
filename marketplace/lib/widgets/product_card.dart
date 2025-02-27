@@ -35,12 +35,12 @@ class ProductCard extends StatelessWidget {
               ),
               child: Image.network(
                 product.images.isNotEmpty ? product.images[0] : '',
-                height: 160,
+                height: 120,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder:
                     (context, error, stackTrace) => const SizedBox(
-                      height: 160,
+                      height: 120,
                       child: Center(child: Icon(Icons.broken_image, size: 50)),
                     ),
               ),
@@ -108,8 +108,19 @@ class ProductCard extends StatelessWidget {
                       children:
                           product.categories.map((category) {
                             return Chip(
-                              label: Text(category),
+                              label: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                ), // Tamaño de fuente reducido
+                              ),
                               backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize
+                                      .shrinkWrap, // Reducir el tamaño del Chip
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ), // Padding reducido
                             );
                           }).toList(),
                     ),

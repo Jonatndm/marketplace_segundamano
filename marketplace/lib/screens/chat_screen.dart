@@ -16,7 +16,7 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   late io.Socket socket;
-  List<Map<String, dynamic>> messages = []; // Lista de mensajes
+  List<Map<String, dynamic>> messages = []; 
   final AuthService _authService = AuthService();
   final ProductService _productService = ProductService();
   String? userId;

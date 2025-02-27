@@ -28,4 +28,32 @@ router.put('/:userId', authenticateUser, async (req, res) => {
   }
 });
 
+router.get('/:userId', authenticateUser, async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    let newUser = {
+      id: user._id,
+      name: user.name,
+      avatar: user.avatar ?? null,
+      chats: user.chats,
+      favoritesSales: user.favorites,
+      salesPublish: user.sales,
+      phone: user.phone ?? null,
+      address: user.address ?? null,
+      bio: user.bio ?? null,
+      purchases: user.purchases
+    };
+
+    res.status(200).json({ newUser });
+  }
+  catch (error) {
+    res.status(500).json({ message: 'Error al buscar el perfil', error });
+  }
+});
+
 module.exports = router;

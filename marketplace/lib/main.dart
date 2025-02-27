@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/providers/auth_provider.dart';
+import 'package:marketplace/screens/my_products.dart';
+import 'package:marketplace/screens/profile_edit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
@@ -18,16 +20,13 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
-        ),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MainApp(
         isLoggedIn: token != null && userId != null,
-        authData: token != null && userId != null
-            ? {'token': token, 'userId': userId}
-            : null,
+        authData:
+            token != null && userId != null
+                ? {'token': token, 'userId': userId}
+                : null,
       ),
     ),
   );
@@ -53,6 +52,8 @@ class MainApp extends StatelessWidget {
         '/': (context) => LoginScreen(),
         Routes.register: (context) => RegisterScreen(),
         Routes.home: (context) => HomeScreen(),
+        Routes.my_products: (context) => MyProductsScreen(),
+        Routes.perfil_edit: (context) => ProfileEdit(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == Routes.productDetail) {

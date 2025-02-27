@@ -6,6 +6,8 @@ const setupWebSocket = require('./utils/webSocket');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
+const profileroutes = require('./routes/profile');
+
 
 dotenv.config();
 const app = express();
@@ -21,6 +23,7 @@ app.use(express.json());
 // Rutas para autenticación y productos
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/profile', profileroutes);
 
 
 // Conectar a MongoDB
