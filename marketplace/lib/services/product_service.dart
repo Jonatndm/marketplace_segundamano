@@ -57,12 +57,14 @@ class ProductService {
     required double latitude,
     required double longitude,
     required List<String> categories,
-    required List<String> imagePaths, // Rutas de las imágenes
-    required String token, // Token de autenticación
+    required List<String> imagePaths,
+    required String token,
   }) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/products'))
-        ..headers['Authorization'] = 'Bearer $token';
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/products'),
+      )..headers['Authorization'] = 'Bearer $token';
 
       // Agregar campos del formulario
       request.fields['name'] = name;
@@ -75,21 +77,24 @@ class ProductService {
       // Agregar imágenes
       for (var imagePath in imagePaths) {
         var file = await http.MultipartFile.fromPath(
-          'images', // Nombre del campo en el backend
+          'images',
           imagePath,
-          contentType: MediaType('image', 'jpeg'), // Ajusta el tipo MIME según el formato de la imagen
+          contentType: MediaType(
+            'image',
+            'jpeg',
+          ), // Ajusta el tipo MIME según el formato de la imagen
         );
         request.files.add(file);
       }
 
-      // Enviar la solicitud
       var response = await request.send();
 
-      // Verificar la respuesta
       if (response.statusCode == 201) {
       } else {
         var responseBody = await response.stream.bytesToString();
-        throw Exception('Error al crear el producto: ${response.statusCode} - $responseBody');
+        throw Exception(
+          'Error al crear el producto: ${response.statusCode} - $responseBody',
+        );
       }
     } catch (error) {
       throw Exception('Error al enviar la solicitud: $error');

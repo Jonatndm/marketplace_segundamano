@@ -19,11 +19,7 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          Routes.productDetail,
-          arguments: product,
-        );
+        Navigator.pushNamed(context, Routes.productDetail, arguments: product);
       },
       child: Card(
         elevation: 4,
@@ -34,14 +30,16 @@ class ProductCard extends StatelessWidget {
           children: [
             // Imagen del producto
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: Image.network(
                 product.images.isNotEmpty ? product.images[0] : '',
                 height: 160,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    const SizedBox(
+                errorBuilder:
+                    (context, error, stackTrace) => const SizedBox(
                       height: 160,
                       child: Center(child: Icon(Icons.broken_image, size: 50)),
                     ),
@@ -87,11 +85,18 @@ class ProductCard extends StatelessWidget {
                   // Ubicación del producto
                   Row(
                     children: [
-                      const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                      const Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         _formatCoordinates(product.location['coordinates']),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -100,12 +105,13 @@ class ProductCard extends StatelessWidget {
                   if (product.categories.isNotEmpty)
                     Wrap(
                       spacing: 4.0,
-                      children: product.categories.map((category) {
-                        return Chip(
-                          label: Text(category),
-                          backgroundColor: Colors.blue.withOpacity(0.2),
-                        );
-                      }).toList(),
+                      children:
+                          product.categories.map((category) {
+                            return Chip(
+                              label: Text(category),
+                              backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
+                            );
+                          }).toList(),
                     ),
                 ],
               ),

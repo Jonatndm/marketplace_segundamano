@@ -1,3 +1,5 @@
+import 'package:marketplace/models/seller.dart';
+
 class Product {
   final String id;
   final String name;
@@ -5,7 +7,7 @@ class Product {
   final double price;
   final List<String> images;
   final Map<String, dynamic> location;
-  final String seller;
+  final Seller seller;
   final List<String> categories;
   final bool sold;
   final String? chat; 
@@ -35,7 +37,7 @@ class Product {
       'type': json['location']['type'] ?? 'Point',
       'coordinates': List<double>.from(json['location']['coordinates']?.map((e) => e.toDouble()) ?? [0.0, 0.0]),
     },
-    seller: json['seller'] is String ? json['seller'] : json['seller']['_id'],
+    seller: Seller.fromJson(json['seller']),
     categories: List<String>.from(json['categories'] ?? []),
     sold: json['sold'] ?? false,
     chat: json['chat'] is String ? json['chat'] : json['chat']?['_id'],
@@ -50,7 +52,7 @@ class Product {
       'price': price,
       'images': images,
       'location': location,
-      'seller': seller,
+      'seller': seller.toJson(),
       'categories': categories,
       'sold': sold,
       'chat': chat,

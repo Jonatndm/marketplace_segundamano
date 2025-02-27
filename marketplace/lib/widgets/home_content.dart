@@ -4,6 +4,8 @@ import 'package:marketplace/services/product_service.dart';
 import 'package:marketplace/widgets/product_card.dart';
 
 class HomeContent extends StatelessWidget {
+  HomeContent({super.key});
+  
   final ProductService _productService = ProductService();
 
   @override

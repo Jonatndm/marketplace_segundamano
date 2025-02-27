@@ -6,16 +6,17 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+  
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  RegisterScreenState createState() => RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
 
-  
   final AuthService _authService = AuthService();
 
   void _register() async {
@@ -58,16 +59,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await prefs.setString('userId', userId);
 
         // Guardar en el AuthProvider
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        authProvider.setAuthData(token, userId);
+        if (mounted) {
+          final authProvider = Provider.of<AuthProvider>(
+            context,
+            listen: false,
+          );
+          authProvider.setAuthData(token, userId);
+        }
 
         // Navegar a la pantalla de inicio
-        Navigator.pushReplacementNamed(context, Routes.home);
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, Routes.home);
+        }
       }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+    } 
+    catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      }
     }
   }
 

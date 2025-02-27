@@ -6,11 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:marketplace/services/product_service.dart';
 
 class PublishProductScreen extends StatefulWidget {
+  const PublishProductScreen({super.key});
+  
   @override
-  _PublishProductScreenState createState() => _PublishProductScreenState();
+  PublishProductScreenState createState() => PublishProductScreenState();
 }
 
-class _PublishProductScreenState extends State<PublishProductScreen> {
+class PublishProductScreenState extends State<PublishProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
@@ -46,7 +48,9 @@ class _PublishProductScreenState extends State<PublishProductScreen> {
 
       // Obtiene la ubicación actual
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high
+        )
       );
 
       setState(() {
@@ -55,20 +59,20 @@ class _PublishProductScreenState extends State<PublishProductScreen> {
       });
     } 
     catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al obtener la ubicación: $error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al obtener la ubicación: $error')),
+        );
+      }
     }
   }
 
   // Método para seleccionar imágenes
   Future<void> _pickImages() async {
-    final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-    if (pickedFiles != null) {
+    final List<XFile> pickedFiles = await _picker.pickMultiImage();
       setState(() {
         _images.addAll(pickedFiles.map((file) => File(file.path)).toList());
       });
-    }
   }
 
   // Método para eliminar una imagen
@@ -117,20 +121,22 @@ class _PublishProductScreenState extends State<PublishProductScreen> {
         );
 
         // Mostrar mensaje de éxito
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Producto creado correctamente')),
-        );
-
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Producto creado correctamente')),
+          );
+        }
         // Limpiar el formulario
         _formKey.currentState!.reset();
         setState(() {
           _images.clear();
         });
       } catch (error) {
-        // Mostrar mensaje de error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al crear el producto: $error')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error al crear el producto: $error')),
+          );
+        }
       }
     }
   }

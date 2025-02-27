@@ -7,13 +7,13 @@ import '../services/product_service.dart';
 class ChatScreen extends StatefulWidget {
   final Product product;
 
-  const ChatScreen({Key? key, required this.product}) : super(key: key);
+  const ChatScreen({super.key, required this.product});
 
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ChatScreenState createState() => ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   late io.Socket socket;
   List<Map<String, dynamic>> messages = []; // Lista de mensajes
@@ -35,6 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
       userId = id; // Guardar el userId en el estado
     });
   }
+
   void _connectToSocket() {
     socket = io.io(
       'http://localhost:5000',
@@ -45,14 +46,10 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     socket.connect();
-    socket.onConnectError((error) {
-      print('Error de conexión: $error');
-    });
+    socket.onConnectError((error) {});
 
     // Manejar desconexiones
-    socket.onDisconnect((_) {
-      print('Desconectado del WebSocket');
-    });
+    socket.onDisconnect((_) {});
 
     if (userId != null) {
       socket.emit('message', {
@@ -76,18 +73,20 @@ class _ChatScreenState extends State<ChatScreen> {
   void _loadMessages() async {
     try {
       // Obtener los mensajes anteriores desde el backend
-      final chatMessages = await _productService.getChatMessages(widget.product.id);
+      final chatMessages = await _productService.getChatMessages(
+        widget.product.id,
+      );
       setState(() {
         messages = chatMessages; // Cargar mensajes en la lista
       });
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los mensajes: $error')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar los mensajes: $error')),
+        );
+      }
     }
   }
-
-
 
   void _sendMessage() {
     if (_messageController.text.isNotEmpty) {
@@ -102,10 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Agregar el mensaje a la lista local
       setState(() {
-        messages.add({
-          'sender': userId,
-          'message': message,
-        });
+        messages.add({'sender': userId, 'message': message});
       });
 
       _messageController.clear();
@@ -122,7 +118,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Chat sobre ${widget.product.name}'), automaticallyImplyLeading: false,),
+      appBar: AppBar(
+        title: Text('Chat sobre ${widget.product.name}'),
+        automaticallyImplyLeading: false,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -130,21 +129,37 @@ class _ChatScreenState extends State<ChatScreen> {
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final message = messages[index];
-                final isMe = message['sender'] == userId; // Verificar si el mensaje es del usuario actual
+                final isMe =
+                    message['sender'] ==
+                    userId;
 
                 return Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft, // Alinear a la derecha o izquierda
+                  alignment:
+                      isMe
+                          ? Alignment.centerRight
+                          : Alignment
+                              .centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 8,
+                    ),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isMe ? Colors.blue : Colors.grey[300], // Color diferente para el remitente
+                      color:
+                          isMe
+                              ? Colors.blue
+                              : Colors
+                                  .grey[300],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       message['message'],
                       style: TextStyle(
-                        color: isMe ? Colors.white : Colors.black, // Color del texto
+                        color:
+                            isMe
+                                ? Colors.white
+                                : Colors.black,
                       ),
                     ),
                   ),
@@ -159,7 +174,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _messageController,
-                    decoration: const InputDecoration(hintText: 'Escribe un mensaje...'),
+                    decoration: const InputDecoration(
+                      hintText: 'Escribe un mensaje...',
+                    ),
                   ),
                 ),
                 IconButton(

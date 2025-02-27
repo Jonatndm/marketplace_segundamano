@@ -1,43 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart' as carousel;
-import 'package:marketplace/services/product_service.dart';
 import '../models/product.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
-  final ProductService _productService = ProductService();
 
-  ProductDetailScreen({Key? key, required this.product}) : super(key: key);
-
-  Widget _buildSellerWidget() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Vendedor:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        FutureBuilder<String>(
-          future: _productService.getNameSeller(product.seller),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else if (snapshot.hasData) {
-              return Text(
-                snapshot.data!,
-                style: const TextStyle(fontSize: 16),
-              );
-            } else {
-              return const Text('No se encontró el vendedor');
-            }
-          },
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
+  const ProductDetailScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +86,7 @@ class ProductDetailScreen extends StatelessWidget {
                     children: product.categories.map((category) {
                       return Chip(
                         label: Text(category),
-                        backgroundColor: Colors.blue.withOpacity(0.2),
+                        backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
                       );
                     }).toList(),
                   ),
@@ -126,8 +94,11 @@ class ProductDetailScreen extends StatelessWidget {
               ),
             const SizedBox(height: 16),
             // Vendedor del producto
-            _buildSellerWidget(),
-
+            Text(
+              'Vendedor: ${product.seller.name}',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
             // Botón para contactar al vendedor
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/chat', arguments: product),
