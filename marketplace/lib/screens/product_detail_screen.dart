@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart' as carousel;
 import '../models/product.dart';
+import '../services/opencage_service.dart'; // Importa el servicio de geolocalización
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
   final String baseUrl = 'http://192.168.100.3:5000';
+
+  // Mapa para almacenar en caché las direcciones
+  static final Map<String, String> _addressCache = {};
+
+  // Método para obtener la dirección desde el caché o hacer la solicitud
+  Future<String> _getCachedAddress(double lat, double lng) async {
+    final String cacheKey = '$lat,$lng';
+    if (_addressCache.containsKey(cacheKey)) {
+      return _addressCache[cacheKey]!;
+    } else {
+      final address = await OpenCageService.getAddressFromCoordinates(lat, lng);
+      _addressCache[cacheKey] = address;
+      return address;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,12 +133,63 @@ class ProductDetailScreen extends StatelessWidget {
                 ],
               ),
             const SizedBox(height: 16),
+
+            // Ubicación del producto
+            FutureBuilder<String>(
+              future: _getCachedAddress(
+                product.location['coordinates'][1], // Latitud
+                product.location['coordinates'][0], // Longitud
+              ),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Ubicación:',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              snapshot.data ?? 'Ubicación no disponible',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+
             // Vendedor del producto
             Text(
               'Vendedor: ${product.seller.name}',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
+
             // Botón para contactar al vendedor
             ElevatedButton(
               onPressed:
