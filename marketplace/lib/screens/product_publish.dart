@@ -7,7 +7,7 @@ import 'package:marketplace/services/product_service.dart';
 
 class PublishProductScreen extends StatefulWidget {
   const PublishProductScreen({super.key});
-  
+
   @override
   PublishProductScreenState createState() => PublishProductScreenState();
 }
@@ -48,17 +48,14 @@ class PublishProductScreenState extends State<PublishProductScreen> {
 
       // Obtiene la ubicación actual
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(
-          accuracy: LocationAccuracy.high
-        )
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
 
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
       });
-    } 
-    catch (error) {
+    } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al obtener la ubicación: $error')),
@@ -70,9 +67,9 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   // Método para seleccionar imágenes
   Future<void> _pickImages() async {
     final List<XFile> pickedFiles = await _picker.pickMultiImage();
-      setState(() {
-        _images.addAll(pickedFiles.map((file) => File(file.path)).toList());
-      });
+    setState(() {
+      _images.addAll(pickedFiles.map((file) => File(file.path)).toList());
+    });
   }
 
   // Método para eliminar una imagen
@@ -107,6 +104,11 @@ class PublishProductScreenState extends State<PublishProductScreen> {
 
         // Convertir las imágenes a rutas
         List<String> imagePaths = _images.map((file) => file.path).toList();
+
+        if (imagePaths.length > 5) {
+          SnackBar(content: Text('Has ingresado mas de 5 imagenes'));
+          return;
+        }
 
         // Llamar al servicio para crear el producto
         await _productService.createProduct(
@@ -169,9 +171,9 @@ class PublishProductScreenState extends State<PublishProductScreen> {
               SizedBox(height: 10),
               _images.length < 5
                   ? ElevatedButton(
-                      onPressed: _pickImages,
-                      child: Text('Seleccionar imágenes'),
-                    )
+                    onPressed: _pickImages,
+                    child: Text('Seleccionar imágenes'),
+                  )
                   : Text('Has alcanzado el límite de 5 imágenes'),
               SizedBox(height: 10),
               // Mostrar las imágenes seleccionadas
@@ -187,10 +189,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 itemBuilder: (context, index) {
                   return Stack(
                     children: [
-                      Image.file(
-                        _images[index],
-                        fit: BoxFit.cover,
-                      ),
+                      Image.file(_images[index], fit: BoxFit.cover),
                       Positioned(
                         top: 0,
                         right: 0,
@@ -267,13 +266,15 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                   border: OutlineInputBorder(),
                 ),
                 value: _categories.isNotEmpty ? _categories.first : null,
-                items: ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros']
-                    .map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
+                items:
+                    ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros'].map((
+                      category,
+                    ) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _categories = [value!];

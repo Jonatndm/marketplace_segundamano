@@ -1,19 +1,35 @@
 const express = require('express');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const authenticateUser = require('../utils/authenticated');
 const router = express.Router();
+const dotenv = require('dotenv');
+
+
+dotenv.config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET_KEY
+});
 
 // Configuración de Multer para subir imágenes
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'products', // Carpeta en Cloudinary donde se guardarán las imágenes
+    allowed_formats: ['jpg', 'jpeg', 'png'], // Formatos permitidos
+    transformation: [{ width: 500, height: 500, crop: 'limit' }] // Transformaciones opcionales
+  }
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB por imagen
+  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB por imagen
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     cb(allowedTypes.includes(file.mimetype) ? null : new Error('Tipo de archivo no permitido'), allowedTypes.includes(file.mimetype));
@@ -28,9 +44,17 @@ router.post('/', authenticateUser, upload.array('images', 5), async (req, res) =
     return res.status(400).json({ message: 'Faltan campos requeridos' });
   }
 
-  const images = req.files?.map(file => file.path) ?? [];
 
   try {
+    // Subir imágenes a Cloudinary y obtener sus URLs
+    const images = await Promise.all(
+      req.files.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.path);
+        return result.secure_url; // URL de la imagen en Cloudinary
+      })
+    );
+
+
     const product = new Product({
       name,
       description,
@@ -127,11 +151,11 @@ router.delete('/:id', authenticateUser, async (req, res) => {
 });
 
 router.get('/seller/:id', async (req, res) => {
-  try{
+  try {
     const user = await User.findById(req.params.id);
 
-    if(!user) 
-        return res.status(404).json({ message: 'Vendedor no encontrado' });
+    if (!user)
+      return res.status(404).json({ message: 'Vendedor no encontrado' });
 
     res.json({ user });
   }

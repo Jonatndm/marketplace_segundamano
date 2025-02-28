@@ -7,7 +7,6 @@ class ProductCard extends StatelessWidget {
   final Product product;
 
   const ProductCard({super.key, required this.product});
-  final String baseUrl = 'http://192.168.100.3:5000';
   static final Map<String, String> _addressCache = {};
 
   Future<String> _getCachedAddress(double lat, double lng) async {
@@ -44,7 +43,7 @@ class ProductCard extends StatelessWidget {
                 child:
                     product.images.isNotEmpty
                         ? Image.network(
-                          '$baseUrl/${product.images[0].replaceAll('\\', '/')}',
+                          product.images[0],
                           height: 120,
                           width: double.infinity,
                           fit: BoxFit.cover,

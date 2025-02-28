@@ -7,7 +7,6 @@ class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
-  final String baseUrl = 'http://192.168.100.3:5000';
 
   // Mapa para almacenar en caché las direcciones
   static final Map<String, String> _addressCache = {};
@@ -45,7 +44,7 @@ class ProductDetailScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
-                    '$baseUrl/${product.images[0].replaceAll('\\', '/')}',
+                    product.images[0],
                     fit: BoxFit.cover,
                     errorBuilder:
                         (context, error, stackTrace) =>
@@ -67,8 +66,6 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
                 items:
                     product.images.map((imageUrl) {
-                      String correctedImageUrl =
-                          '$baseUrl/${imageUrl.replaceAll('\\', '/')}';
                       return Builder(
                         builder: (BuildContext context) {
                           return Container(
@@ -80,7 +77,7 @@ class ProductDetailScreen extends StatelessWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
                               child: Image.network(
-                                correctedImageUrl,
+                                imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder:
                                     (context, error, stackTrace) =>
