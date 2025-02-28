@@ -17,7 +17,14 @@ class OpenCageService {
       final data = json.decode(response.body);
       if (data['results'].isNotEmpty) {
         // Obtén la dirección formateada
-        return data['results'][0]['formatted'];
+        final components = data['results'][0]['components'];
+
+        // Extraer city y country
+        String city = components['city'] ?? 'Ciudad no encontrada';
+        String country = components['country'] ?? 'País no encontrado';
+
+        // Imprimir el resultado
+        return "$city, $country";
       }
     }
     return 'Ubicación no disponible';
