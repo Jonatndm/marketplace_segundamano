@@ -7,6 +7,8 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({super.key, required this.product});
 
+  final String baseUrl = 'http://192.168.100.3:5000';
+
   // Método para formatear las coordenadas
   String _formatCoordinates(List<double> coordinates) {
     if (coordinates.length >= 2) {
@@ -33,17 +35,37 @@ class ProductCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
-              child: Image.network(
-                product.images.isNotEmpty ? product.images[0] : '',
-                height: 120,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder:
-                    (context, error, stackTrace) => const SizedBox(
-                      height: 120,
-                      child: Center(child: Icon(Icons.broken_image, size: 50)),
-                    ),
-              ),
+              child:
+                  product.images.isNotEmpty
+                      ? Image.network(
+                        '$baseUrl/${product.images[0].replaceAll('\\', '/')}', // Usa la primera imagen
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          );
+                        },
+                      )
+                      : Container(
+                        height: 120,
+                        width: double.infinity,
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons
+                              .image_not_supported, // Placeholder si no hay imágenes
+                          color: Colors.grey,
+                          size: 40,
+                        ),
+                      ),
             ),
             // Detalles del producto
             Padding(

@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const profileroutes = require('./routes/profile');
+const path = require('path');
 
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/profile', profileroutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // Conectar a MongoDB

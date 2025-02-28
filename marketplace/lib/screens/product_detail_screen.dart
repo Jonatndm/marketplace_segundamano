@@ -6,50 +6,77 @@ class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
+  final String baseUrl = 'http://192.168.100.3:5000';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(product.name),
-        ),
+      appBar: AppBar(title: Text(product.name)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            carousel.CarouselSlider(
-              options: carousel.CarouselOptions(
+            // Verifica si hay una sola imagen
+            if (product.images.length == 1)
+              Container(
+                width: double.infinity,
                 height: 250.0,
-                autoPlay: true,
-                enlargeCenterPage: true,
-                aspectRatio: 16 / 9,
-                viewportFraction: 0.9,
+                margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.network(
+                    '$baseUrl/${product.images[0].replaceAll('\\', '/')}',
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            const Icon(Icons.broken_image),
+                  ),
+                ),
+              )
+            else
+              carousel.CarouselSlider(
+                options: carousel.CarouselOptions(
+                  height: 250.0,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                  viewportFraction: 0.9,
+                  enableInfiniteScroll:
+                      product.images.length >
+                      1, // Deshabilita el desplazamiento infinito si hay una sola imagen
+                ),
+                items:
+                    product.images.map((imageUrl) {
+                      String correctedImageUrl =
+                          '$baseUrl/${imageUrl.replaceAll('\\', '/')}';
+                      return Builder(
+                        builder: (BuildContext context) {
+                          return Container(
+                            width: MediaQuery.of(context).size.width,
+                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image.network(
+                                correctedImageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (context, error, stackTrace) =>
+                                        const Icon(Icons.broken_image),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
               ),
-              items: product.images.map((imageUrl) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
-            ),
             const SizedBox(height: 16),
-
             // Nombre del producto
             Text(
               product.name,
@@ -65,10 +92,7 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             // Descripción del producto
-            Text(
-              product.description,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(product.description, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
 
             // Categorías del producto
@@ -82,12 +106,13 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   Wrap(
                     spacing: 8.0,
-                    children: product.categories.map((category) {
-                      return Chip(
-                        label: Text(category),
-                        backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
-                      );
-                    }).toList(),
+                    children:
+                        product.categories.map((category) {
+                          return Chip(
+                            label: Text(category),
+                            backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
+                          );
+                        }).toList(),
                   ),
                 ],
               ),
@@ -100,7 +125,9 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             // Botón para contactar al vendedor
             ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/chat', arguments: product),
+              onPressed:
+                  () =>
+                      Navigator.pushNamed(context, '/chat', arguments: product),
               child: const Text('Contactar al Vendedor'),
             ),
           ],
