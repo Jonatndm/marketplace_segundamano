@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/repository/auth_repository.dart';
 import 'package:marketplace/routes.dart';
+import 'package:pin_code_fields/pin_code_fields.dart'; // Importar el paquete OTP Field
 
 class VerifyCodeScreen extends StatefulWidget {
   final String email;
@@ -56,7 +57,10 @@ class VerifyCodeScreenState extends State<VerifyCodeScreen> {
         child: Column(
           children: [
             const SizedBox(height: 90),
-            SizedBox(width: 300, child: Image.asset('assets/images/otp.jpg')),
+            SizedBox(
+              width: 300,
+              child: Image.asset('assets/images/otp.jpg'),
+            ),
             const SizedBox(height: 40),
             Container(
               alignment: Alignment.centerLeft,
@@ -85,35 +89,43 @@ class VerifyCodeScreenState extends State<VerifyCodeScreen> {
             ),
             const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: TextFormField(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: PinCodeTextField(
+                appContext: context,
+                length: 6,
                 controller: codeController,
                 keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color.fromRGBO(247, 247, 247, 1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: 'Ingresa el código',
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.box,
+                  borderRadius: BorderRadius.circular(10), 
+                  fieldHeight: 50,
+                  fieldWidth: 50,
+                  activeFillColor: Colors.white,
+                  inactiveFillColor: Colors.white,
+                  selectedFillColor: Colors.white,
+                  activeColor: Colors.black,
+                  inactiveColor: Colors.grey,
+                  selectedColor: Colors.blue, 
                 ),
+                onChanged: (value) {},
+                onCompleted: (value) {
+                  _verifyCode(); 
+                },
               ),
             ),
             const SizedBox(height: 20),
             _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                  onPressed: _verifyCode,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                    onPressed: _verifyCode,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                    child: const Text('Verificar Código'),
                   ),
-                  child: const Text('Verificar Código'),
-                ),
           ],
         ),
       ),

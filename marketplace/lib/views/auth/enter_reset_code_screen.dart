@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/repository/auth_repository.dart';
 import 'reset_password_screen.dart';
+import 'package:pin_code_fields/pin_code_fields.dart'; // Importar el paquete OTP Field
 
 class EnterResetCodeScreen extends StatefulWidget {
   final String email;
@@ -91,20 +92,28 @@ class EnterResetCodeScreenState extends State<EnterResetCodeScreen> {
             ),
             const SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: TextFormField(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: PinCodeTextField(
+                appContext: context,
+                length: 6, // Longitud del código OTP
                 controller: codeController,
                 keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color.fromRGBO(247, 247, 247, 1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: 'Ingresa el código',
+                pinTheme: PinTheme(
+                  shape: PinCodeFieldShape.box,
+                  borderRadius: BorderRadius.circular(10),
+                  fieldHeight: 50,
+                  fieldWidth: 50,
+                  activeFillColor: Colors.white,
+                  inactiveFillColor: Colors.white,
+                  selectedFillColor: Colors.white,
+                  activeColor: Colors.black,
+                  inactiveColor: Colors.grey,
+                  selectedColor: Colors.blue,
                 ),
+                onChanged: (value) {},
+                onCompleted: (value) {
+                  verifyResetCode(); // Verificar automáticamente cuando se completa el código
+                },
               ),
             ),
             const SizedBox(height: 20),
