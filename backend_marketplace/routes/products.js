@@ -165,4 +165,51 @@ router.get('/seller/:id', async (req, res) => {
   }
 })
 
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Buscar productos donde el campo "seller" coincida con el userId
+    const products = await Product.find({ seller: userId }).populate('seller', 'name email');
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron productos para este usuario' });
+    }
+
+    res.json({ products });
+  } catch (error) {
+    console.error('Error al obtener productos por usuario:', error.message);
+    res.status(500).json({ message: 'Error al obtener productos por usuario', error: error.message });
+  }
+});
+
+router.put('/:id/sold', authenticateUser, async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const userId = req.user.id; // ID del usuario autenticado
+
+    // Buscar el producto por ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    // Verificar si el usuario autenticado es el vendedor del producto
+    if (product.seller.toString() !== userId) {
+      return res.status(403).json({ message: 'No tienes permiso para marcar este producto como vendido' });
+    }
+
+    // Marcar el producto como vendido
+    product.sold = true;
+    await product.save();
+
+    res.json({ message: 'Producto marcado como vendido', product });
+  } catch (error) {
+    console.error('Error al marcar el producto como vendido:', error.message);
+    res.status(500).json({ message: 'Error al marcar el producto como vendido', error: error.message });
+  }
+});
+
+
 module.exports = router;

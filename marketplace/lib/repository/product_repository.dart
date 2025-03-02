@@ -57,4 +57,47 @@ class ProductRepository {
       throw Exception('Failed to create product: $error');
     }
   }
+
+  Future<List<Product>> fetchUserProducts(String userId) async {
+    try {
+      return await _productService.fetchUserProducts(userId);
+    } catch (error) {
+      throw Exception('Failed to fetch user products: $error');
+    }
+  }
+
+  Future<void> markProductAsSold(String productId, String token) async {
+    try {
+      await _productService.markProductAsSold(productId, token);
+    } catch (error) {
+      throw Exception('Failed to mark product as sold: $error');
+    }
+  }
+
+  Future<void> deleteProduct(String productId, String token) async {
+    try {
+      await _productService.deleteProduct(productId, token);
+    } catch (error) {
+      throw Exception('Failed to delete product: $error');
+    }
+  }
+
+  Future<void> updateProduct({
+    required String productId,
+    required String name,required String description, 
+    required double price, required List<String> categories,required List<String> imagePaths, required String token, }) async {
+    try {
+      await _productService.updateProduct(
+        productId: productId,
+        name: name,
+        description: description,
+        price: price,
+        categories: categories,
+        imagePaths: imagePaths,
+        token: token,
+      );
+    } catch (error) {
+      throw Exception('Failed to update product: $error');
+    }
+  }
 }

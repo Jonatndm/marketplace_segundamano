@@ -101,4 +101,99 @@ class ProductService {
       throw Exception('Error al enviar la solicitud: $error');
     }
   }
+
+  Future<List<Product>> fetchUserProducts(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/user/$userId'),
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = json.decode(response.body);
+      List<dynamic> productsData = data['products'];
+      return productsData.map((item) => Product.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load user products');
+    }
+  }
+
+  Future<void> markProductAsSold(String productId, String token) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/products/$productId/sold'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Producto marcado como vendido exitosamente
+      return;
+    } else {
+      throw Exception('Failed to mark product as sold: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteProduct(String productId, String token) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/products/$productId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      // Producto eliminado exitosamente
+      return;
+    } else {
+      throw Exception('Failed to delete product: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updateProduct({
+    required String productId,
+    required String name,
+    required String description,
+    required double price,
+    required List<String> categories,
+    required List<String> imagePaths,
+    required String token,
+  }) async {
+    try {
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('$baseUrl/products/$productId'),
+      )..headers['Authorization'] = 'Bearer $token';
+
+      // Agregar campos del formulario
+      request.fields['name'] = name;
+      request.fields['description'] = description;
+      request.fields['price'] = price.toString();
+      request.fields['categories'] = categories.join(',');
+
+      // Agregar imágenes
+      for (var imagePath in imagePaths) {
+        var file = await http.MultipartFile.fromPath(
+          'images',
+          imagePath,
+          contentType: MediaType(
+            'image',
+            'jpeg',
+          ), // Ajusta el tipo MIME según el formato de la imagen
+        );
+        request.files.add(file);
+      }
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        // Producto actualizado exitosamente
+        return;
+      } else {
+        var responseBody = await response.stream.bytesToString();
+        throw Exception(
+          'Error al actualizar el producto: ${response.statusCode} - $responseBody',
+        );
+      }
+    } catch (error) {
+      throw Exception('Error al enviar la solicitud: $error');
+    }
+  }
 }
