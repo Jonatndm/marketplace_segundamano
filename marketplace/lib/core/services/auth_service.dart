@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  //static const String baseUrl = 'http://localhost:5000/api/auth';
-  static const String baseUrl = 'http://192.168.100.3:5000/api/auth';
+  static const String baseUrl = 'http://localhost:5000/api/auth';
+  // static const String baseUrl = 'http://192.168.100.3:5000/api/auth';
 
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
@@ -27,11 +27,7 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>?> register(
-    String name,
-    String email,
-    String password,
-  ) async {
+  Future<Map<String, dynamic>?> register(String name, String email, String password,) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
@@ -39,18 +35,18 @@ class AuthService {
         body: json.encode({'name': name, 'email': email, 'password': password}),
       );
       if (response.statusCode == 201) {
-        // Si el registro es exitoso, devuelve los datos del usuario (token y userId)
         final data = json.decode(response.body);
         return {
-          'token': data['token'], // Token JWT
-          'userId': data['userId'], // ID del usuario
+          'token': data['token'],
+          'userId': data['userId'],
         };
-      } else {
+      } 
+      else {
         // Si hay un error, lanza una excepción con el mensaje de error
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Error al registrarse');
+        throw Exception();
       }
-    } catch (error) {
+    } 
+    catch (error) {
       // Maneja errores de conexión o del servidor
       throw Exception('Error de conexión: $error');
     }

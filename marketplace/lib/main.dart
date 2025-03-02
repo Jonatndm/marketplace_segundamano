@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/providers/auth_provider.dart';
-import 'package:marketplace/screens/my_products.dart';
-import 'package:marketplace/screens/profile_edit.dart';
+import 'package:marketplace/views/product/my_products.dart';
+import 'package:marketplace/views/profile/profile_edit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/product_detail_screen.dart';
-import 'screens/chat_screen.dart';
+import 'views/auth/login_screen.dart';
+import 'views/home/home_screen.dart';
+import 'views/auth/register_screen.dart';
+import 'views/product/product_detail_screen.dart';
+import 'views/chat/chat_screen.dart';
 import 'routes.dart';
 import './models/product.dart';
 
@@ -17,6 +17,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
   final userId = prefs.getString('userId');
+  // await dotenv.load(fileName: ".env");
 
   runApp(
     MultiProvider(

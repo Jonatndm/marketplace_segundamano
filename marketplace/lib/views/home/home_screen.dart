@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace/screens/chat_list_screen.dart';
-import 'package:marketplace/screens/product_publish.dart';
-import 'package:marketplace/screens/profile_screen.dart';
+import 'package:marketplace/views/chat/chat_list_screen.dart';
+import 'package:marketplace/views/product/product_publish.dart';
+import 'package:marketplace/views/profile/profile_screen.dart';
 import 'package:marketplace/widgets/home_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

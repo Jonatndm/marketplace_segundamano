@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace/providers/auth_provider.dart';
-import 'package:marketplace/services/auth_service.dart';
+import 'package:marketplace/repository/auth_repository.dart';
 import 'package:marketplace/routes.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,35 +13,44 @@ class LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  final AuthService _authService = AuthService();
+  final AuthRepository _authRepository = AuthRepository(); // Instancia del repositorio
+  bool _isLoading = false;
 
   void _login() async {
     final email = emailController.text;
     final password = passwordController.text;
 
-    final authData = await _authService.login(email, password);
-    if (authData != null) {
-      final token = authData['token'];
-      final userId = authData['userId'];
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, completa todos los campos')),
+      );
+      return;
+    }
 
-      // Guardar en SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', token);
-      await prefs.setString('userId', userId);
+    setState(() => _isLoading = true);
 
-      // Guardar en el AuthProvider
-      if (mounted) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        authProvider.setAuthData(token, userId);
+    try {
+      final authData = await _authRepository.login(email, password);
+      if (authData != null) {
+        // Navegar a la pantalla de inicio
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, Routes.home);
+        }
+      } 
+      else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error en el login')),
+        );
       }
-
-      // Navegar a la pantalla de inicio
+    } catch (error) {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, Routes.home);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error en el login: $error')),
+        );
       }
-    } else {
+    } finally {
       if (mounted) {
-        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text('Error en el login')));
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -67,7 +73,9 @@ class LoginScreenState extends State<LoginScreen> {
               obscureText: true,
             ),
             SizedBox(height: 20),
-            ElevatedButton(onPressed: _login, child: Text('Iniciar Sesión')),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(onPressed: _login, child: Text('Iniciar Sesión')),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, Routes.register),
               child: Text('Registrarse'),

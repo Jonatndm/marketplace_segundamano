@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:geolocator/geolocator.dart';
+import 'package:marketplace/repository/product_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:marketplace/services/product_service.dart';
 
 class PublishProductScreen extends StatefulWidget {
   const PublishProductScreen({super.key});
@@ -23,7 +23,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   double? _latitude;
   double? _longitude;
   List<String> _categories = ['Electrónica'];
-  final ProductService _productService = ProductService();
+  final ProductRepository _productRepository = ProductRepository(); // Usa el repositorio
 
   // Método para obtener la ubicación
   Future<void> _getLocation() async {
@@ -106,12 +106,14 @@ class PublishProductScreenState extends State<PublishProductScreen> {
         List<String> imagePaths = _images.map((file) => file.path).toList();
 
         if (imagePaths.length > 5) {
-          SnackBar(content: Text('Has ingresado mas de 5 imagenes'));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Has ingresado más de 5 imágenes')),
+          );
           return;
         }
 
-        // Llamar al servicio para crear el producto
-        await _productService.createProduct(
+        // Llamar al repositorio para crear el producto
+        await _productRepository.createProduct(
           name: _title,
           description: _description,
           price: _price,
@@ -171,9 +173,9 @@ class PublishProductScreenState extends State<PublishProductScreen> {
               SizedBox(height: 10),
               _images.length < 5
                   ? ElevatedButton(
-                    onPressed: _pickImages,
-                    child: Text('Seleccionar imágenes'),
-                  )
+                      onPressed: _pickImages,
+                      child: Text('Seleccionar imágenes'),
+                    )
                   : Text('Has alcanzado el límite de 5 imágenes'),
               SizedBox(height: 10),
               // Mostrar las imágenes seleccionadas
@@ -266,15 +268,13 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                   border: OutlineInputBorder(),
                 ),
                 value: _categories.isNotEmpty ? _categories.first : null,
-                items:
-                    ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros'].map((
-                      category,
-                    ) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
+                items: ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros']
+                    .map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _categories = [value!];

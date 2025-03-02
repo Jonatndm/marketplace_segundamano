@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart' as carousel;
-import '../models/product.dart';
-import '../services/opencage_service.dart'; // Importa el servicio de geolocalización
+import 'package:marketplace/repository/opencage_repository.dart';
+import '../../models/product.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -17,7 +17,8 @@ class ProductDetailScreen extends StatelessWidget {
     if (_addressCache.containsKey(cacheKey)) {
       return _addressCache[cacheKey]!;
     } else {
-      final address = await OpenCageService.getAddressFromCoordinates(lat, lng);
+      final OpenCageRepository openCageRepository = OpenCageRepository();
+      final address = await openCageRepository.getAddressFromCoordinates(lat, lng);
       _addressCache[cacheKey] = address;
       return address;
     }

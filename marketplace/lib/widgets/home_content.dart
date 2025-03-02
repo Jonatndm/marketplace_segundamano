@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/models/product.dart';
-import 'package:marketplace/services/product_service.dart';
+import 'package:marketplace/repository/product_repository.dart';
 import 'package:marketplace/widgets/product_card.dart';
 
 class HomeContent extends StatelessWidget {
   HomeContent({super.key});
   
-  final ProductService _productService = ProductService();
+  final ProductRepository _productRepository = ProductRepository();
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Product>>(
-      future: _productService.fetchProducts(),
+      future: _productRepository.fetchProducts(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());

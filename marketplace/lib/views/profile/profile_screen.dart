@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marketplace/models/user.dart';
 import 'package:marketplace/providers/auth_provider.dart';
-import 'package:marketplace/services/user_service.dart';
+import 'package:marketplace/repository/user_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,12 +17,12 @@ class ProfileScreen extends StatefulWidget {
 
 class ProfileScreenState extends State<ProfileScreen> {
   late Future<User> _userFuture;
-  final UserService _userService = UserService();
+  final UserRepository _userRepository = UserRepository(); // Usa el repositorio
 
   @override
   void initState() {
     super.initState();
-    _userFuture = _userService.getUser(widget.userId, widget.token);
+    _userFuture = _userRepository.getUser(widget.userId, widget.token); // Llama al repositorio
   }
 
   void _logout() async {

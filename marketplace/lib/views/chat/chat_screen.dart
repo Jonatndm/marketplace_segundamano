@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
-import '../models/product.dart';
-import '../services/auth_service.dart';
-import '../services/product_service.dart';
+import '../../models/product.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/product_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final Product product;

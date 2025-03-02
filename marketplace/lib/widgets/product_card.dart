@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:marketplace/services/opencage_service.dart';
+import 'package:marketplace/repository/opencage_repository.dart';
 import '../models/product.dart';
 import '../routes.dart';
 
@@ -14,7 +14,8 @@ class ProductCard extends StatelessWidget {
     if (_addressCache.containsKey(cacheKey)) {
       return _addressCache[cacheKey]!;
     } else {
-      final address = await OpenCageService.getAddressFromCoordinates(lat, lng);
+      final OpenCageRepository openCageRepository = OpenCageRepository();
+      final address = await openCageRepository.getAddressFromCoordinates(lat, lng);
       _addressCache[cacheKey] = address;
       return address;
     }
