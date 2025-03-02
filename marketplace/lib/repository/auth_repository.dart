@@ -14,27 +14,52 @@ class AuthRepository {
         return authData;
       }
       return null;
-    } 
-    catch (error) {
+    } catch (error) {
       throw Exception('Error en el login: $error');
     }
   }
 
-  Future<Map<String, dynamic>?> register(String name, String email, String password,) async {
+  Future<String?> register(String name, String email, String password) async {
     try {
-      final authData = await _authService.register(name, email, password);
+      final response = await _authService.register(name, email, password);
+      if (response) {
+        return 'Registro exitoso. Verifica tu correo para completar el proceso.';
+      }
+      return null;
+    } catch (error) {
+      throw Exception('Error en el registro: $error');
+    }
+  }
+
+  Future<Map<String, dynamic>?> verifyCode(String email, String code) async {
+    try {
+      final authData = await _authService.verifyCode(email, code);
       if (authData != null) {
-        // Guardar en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', authData['token']);
         await prefs.setString('userId', authData['userId']);
         return authData;
       }
       return null;
-    } 
-    catch (error) {
-      throw Exception('Error al registrarse: $error');
+    } catch (error) {
+      throw Exception('Error al verificar código: $error');
     }
+  }
+
+  Future<bool> requestPasswordReset(String email) async {
+    return await _authService.requestPasswordReset(email);
+  }
+
+  Future<bool> resetPassword(
+    String email,
+    String code,
+    String newPassword,
+  ) async {
+    return await _authService.resetPassword(email, code, newPassword);
+  }
+
+  Future<bool> verifyResetCode(String email, String code) async {
+    return await _authService.verifyResetCode(email, code);
   }
 
   Future<String?> getToken() async {

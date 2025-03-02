@@ -53,8 +53,8 @@ class MainApp extends StatelessWidget {
         '/': (context) => LoginScreen(),
         Routes.register: (context) => RegisterScreen(),
         Routes.home: (context) => HomeScreen(),
-        Routes.my_products: (context) => MyProductsScreen(),
-        Routes.perfil_edit: (context) => ProfileEdit(),
+        Routes.myProducts: (context) => MyProductsScreen(),
+        Routes.perfilEdit: (context) => ProfileEdit(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == Routes.productDetail) {

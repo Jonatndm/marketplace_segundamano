@@ -61,14 +61,14 @@ class HomeScreenState extends State<HomeScreen> {
           final userId = snapshot.data![0]!;
           final token = snapshot.data![1]!;
 
-          final List<Widget> _screens = [
+          final List<Widget> screens = [
             HomeContent(),
             PublishProductScreen(),
             ChatListScreen(),
             ProfileScreen(userId: userId, token: token), // Pasa los parámetros
           ];
 
-          return _screens[_currentIndex];
+          return screens[_currentIndex];
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
