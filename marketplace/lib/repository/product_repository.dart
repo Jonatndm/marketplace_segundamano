@@ -13,6 +13,14 @@ class ProductRepository {
     }
   }
 
+  Future<List<Product>> fetchNearbyProducts(double long, double lat) async {
+    try {
+      return await _productService.fetchNearbyProducts(long, lat);
+    } catch (error) {
+      throw Exception('Fallo al obtener los productos cercanos: $error');
+    }
+  }
+
   // Obtener los mensajes de chat de un producto
   Future<List<Map<String, dynamic>>> getChatMessages(String productId) async {
     try {

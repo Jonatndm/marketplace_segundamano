@@ -31,8 +31,8 @@ class ProductCard extends StatelessWidget {
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 200, maxHeight: 450),
+        child: SizedBox(
+          height: 250, // Define una altura fija para el Card
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -41,147 +41,112 @@ class ProductCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(12),
                 ),
-                child:
-                    product.images.isNotEmpty
-                        ? Image.network(
-                          product.images[0],
-                          height: 120,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 120,
-                              width: double.infinity,
-                              color: Colors.grey[300],
-                              child: const Icon(
-                                Icons.broken_image,
-                                color: Colors.grey,
-                                size: 40,
-                              ),
-                            );
-                          },
-                        )
-                        : Container(
-                          height: 120,
-                          width: double.infinity,
-                          color: Colors.grey[300],
-                          child: const Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey,
-                            size: 40,
-                          ),
+                child: product.images.isNotEmpty
+                    ? Image.network(
+                        product.images[0],
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 120,
+                            width: double.infinity,
+                            color: Colors.grey[300],
+                            child: const Icon(
+                              Icons.broken_image,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        height: 120,
+                        width: double.infinity,
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                          size: 40,
                         ),
+                      ),
               ),
               // Detalles del producto
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Nombre del producto
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nombre del producto
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product.description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Descripción del producto
+                    Text(
+                      product.description,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
                       ),
-                      const SizedBox(height: 4),
-                      // Precio del producto
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Precio del producto
+                    Text(
+                      '\$${product.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 6),
-                      // Ubicación del producto
-                      FutureBuilder<String>(
-                        future: _getCachedAddress(
-                          product.location['coordinates'][1], // Latitud
-                          product.location['coordinates'][0], // Longitud
-                        ),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  size: 14,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    snapshot.data ?? 'Ubicación no disponible',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                    maxLines: 2, // Máximo de líneas
-                                    overflow:
-                                        TextOverflow
-                                            .ellipsis, // Puntos suspensivos si supera
+                    ),
+                    const SizedBox(height: 6),
+                    // Ubicación del producto
+                    FutureBuilder<String>(
+                      future: _getCachedAddress(
+                        product.location['coordinates'][1], // Latitud
+                        product.location['coordinates'][0], // Longitud
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  snapshot.data ?? 'Ubicación no disponible',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
                                   ),
+                                  maxLines: 2, // Máximo de líneas
+                                  overflow: TextOverflow.ellipsis, // Puntos suspensivos si supera
                                 ),
-                              ],
-                            );
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      // Categorías del producto
-                      // if (product.categories.isNotEmpty)
-                      //   Flexible(
-                      //     child: Wrap(
-                      //       spacing: 4.0,
-                      //       runSpacing:
-                      //           4.0, // Espacio entre líneas de categorías
-                      //       children:
-                      //           product.categories.map((category) {
-                      //             return Chip(
-                      //               label: Text(
-                      //                 category,
-                      //                 style: const TextStyle(fontSize: 10),
-                      //               ),
-                      //               backgroundColor: const Color.fromRGBO(
-                      //                 6,
-                      //                 130,
-                      //                 255,
-                      //                 0.2,
-                      //               ),
-                      //               materialTapTargetSize:
-                      //                   MaterialTapTargetSize.shrinkWrap,
-                      //               padding: const EdgeInsets.symmetric(
-                      //                 horizontal: 4,
-                      //               ),
-                      //             );
-                      //           }).toList(),
-                      //     ),
-                      //   ),
-                    ],
-                  ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],

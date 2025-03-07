@@ -48,6 +48,7 @@ class MainApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Marketplace de Segunda Mano',
+      debugShowCheckedModeBanner: false,
       initialRoute: isLoggedIn ? Routes.home : '/',
       routes: {
         '/': (context) => LoginScreen(),

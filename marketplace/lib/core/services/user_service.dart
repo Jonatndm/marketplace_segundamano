@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:marketplace/models/user.dart';
 
 class UserService {
-  static const String baseUrl = 'http://192.168.100.3:5000/api/profile';
+  static const String baseUrl = 'http://192.168.4.30:5000/api/profile';
   // static const String baseUrl = 'http://localhost:5000/api/profile';
 
   Future<User> getUser(String userId, String token) async {

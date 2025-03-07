@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OpenCageService {
-  // static String apiKey = dotenv.get('OPEN_CAGE_API_KEY');
+  //static String apiKey = dotenv.get('OPEN_CAGE_API_KEY');
   static const String apiKey = '6d29cdef69b945389d69ad7151dd29a9';
   static const String _baseUrl = 'https://api.opencagedata.com/geocode/v1/json';
 

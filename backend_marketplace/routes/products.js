@@ -75,7 +75,7 @@ router.post('/', authenticateUser, upload.array('images', 5), async (req, res) =
 
 // Obtener productos cercanos a una ubicación
 router.get('/nearby', async (req, res) => {
-  const { latitude, longitude, maxDistance = 5000 } = req.query;
+  const { latitude, longitude, maxDistance = 15000 } = req.query;
 
   if (!latitude || !longitude) {
     return res.status(400).json({ message: 'Latitud y longitud son requeridas' });
@@ -89,7 +89,7 @@ router.get('/nearby', async (req, res) => {
           $maxDistance: parseInt(maxDistance)
         }
       }
-    });
+    }).populate('seller', 'name email');
 
     res.json({ products });
   } catch (error) {

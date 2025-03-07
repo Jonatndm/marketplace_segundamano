@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:marketplace/models/product.dart';
+import 'package:marketplace/repository/product_repository.dart';
 import 'package:marketplace/views/chat/chat_list_screen.dart';
 import 'package:marketplace/views/product/product_publish.dart';
+import 'package:marketplace/views/product/product_search_delegate.dart';
 import 'package:marketplace/views/profile/profile_screen.dart';
 import 'package:marketplace/widgets/home_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,12 +20,56 @@ class HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   late Future<String?> _userIdFuture;
   late Future<String?> _tokenFuture;
+  final ValueNotifier<String> _searchNotifier = ValueNotifier('');
+  List<Product> _products = [];
+  List<Product> _nearbyProducts = [];
+  List<Product> _combinedProducts = [];
+
+  Future<void> _loadProducts() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Los servicios de ubicación están desactivados.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Los permisos de ubicación fueron denegados.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Los permisos de ubicación están denegados permanentemente.');
+      }
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
+      );
+
+      double lat = position.latitude;
+      double long = position.longitude;
+    final productRepository = ProductRepository();
+    final nearbyProducts = await productRepository.fetchNearbyProducts(long, lat);
+
+    final products = await productRepository.fetchProducts();
+
+    final combinedProducts = [...{...nearbyProducts, ...products}];
+
+
+
+    setState(() {
+      _nearbyProducts = nearbyProducts;
+      _products = products;
+      _combinedProducts = combinedProducts;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _userIdFuture = _getUserId();
     _tokenFuture = _getToken();
+    _loadProducts();
   }
 
   // Método para obtener el userId desde SharedPreferences
@@ -42,6 +90,20 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Productos de Segunda Mano'),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: ProductSearchDelegate(
+                  searchNotifier: _searchNotifier,
+                  products: _combinedProducts,
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder(
         future: Future.wait([_userIdFuture, _tokenFuture]),
@@ -62,10 +124,10 @@ class HomeScreenState extends State<HomeScreen> {
           final token = snapshot.data![1]!;
 
           final List<Widget> screens = [
-            HomeContent(),
+            HomeContent(searchQuery: _searchNotifier.value, products: _combinedProducts), // Pasa searchQuery
             PublishProductScreen(),
             ChatListScreen(),
-            ProfileScreen(userId: userId, token: token), // Pasa los parámetros
+            ProfileScreen(userId: userId, token: token),
           ];
 
           return screens[_currentIndex];

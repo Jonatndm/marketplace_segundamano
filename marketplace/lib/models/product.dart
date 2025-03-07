@@ -58,4 +58,15 @@ class Product {
       'chat': chat,
     };
   }
+
+  // Sobrescribir el método ==
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Product && other.id == id;
+  }
+
+  // Sobrescribir el método hashCode
+  @override
+  int get hashCode => id.hashCode;
 }
