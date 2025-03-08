@@ -6,11 +6,17 @@ import 'package:marketplace/widgets/product_card.dart';
 class HomeContent extends StatelessWidget {
   final String searchQuery;
   final List<Product> products;
+  final bool isLoading;
 
-  const HomeContent({super.key, required this.searchQuery, required this.products});
+  const HomeContent({super.key, required this.searchQuery, required this.products, required this.isLoading});
 
   @override
+  @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator()); // Muestra un indicador de carga
+    }
+
     // Filtrar productos basados en searchQuery
     final filteredProducts = products
         .where((product) =>
@@ -22,7 +28,6 @@ class HomeContent extends StatelessWidget {
     }
 
     return Scaffold(
-      // AppBar movido aquí
       appBar: AppBar(
         title: const Text('Productos', style: TextStyle(fontSize: 26)),
         backgroundColor: Colors.white,
@@ -45,10 +50,10 @@ class HomeContent extends StatelessWidget {
       body: GridView.builder(
         padding: const EdgeInsets.all(8.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Número de columnas
-          crossAxisSpacing: 3.0, // Espaciado horizontal entre elementos
-          mainAxisSpacing: 0.3, // Espaciado vertical entre elementos
-          childAspectRatio: 0.57, // Relación de aspecto (ancho/alto)
+          crossAxisCount: 2,
+          crossAxisSpacing: 3.0,
+          mainAxisSpacing: 0.3,
+          childAspectRatio: 0.57,
         ),
         itemCount: filteredProducts.length,
         itemBuilder: (context, index) => ProductCard(product: filteredProducts[index]),

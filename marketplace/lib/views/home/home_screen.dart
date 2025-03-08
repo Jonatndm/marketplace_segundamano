@@ -21,40 +21,52 @@ class HomeScreenState extends State<HomeScreen> {
   late Future<String?> _tokenFuture;
   final ValueNotifier<String> _searchNotifier = ValueNotifier('');
   List<Product> _combinedProducts = [];
+  bool _isLoading = true;
 
   Future<void> _loadProducts() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Los servicios de ubicación están desactivados.');
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Los permisos de ubicación fueron denegados.');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Los permisos de ubicación están denegados permanentemente.');
-    }
-    Position position = await Geolocator.getCurrentPosition(
-      locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
-    );
-
-    double lat = position.latitude;
-    double long = position.longitude;
-    final productRepository = ProductRepository();
-    final nearbyProducts = await productRepository.fetchNearbyProducts(long, lat);
-
-    final products = await productRepository.fetchProducts();
-
-    final combinedProducts = [...{...nearbyProducts, ...products}];
-
     setState(() {
-      _combinedProducts = combinedProducts;
+      _isLoading = true; // Comienza la carga
     });
+
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Los servicios de ubicación están desactivados.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Los permisos de ubicación fueron denegados.');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Los permisos de ubicación están denegados permanentemente.');
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
+      );
+
+      double lat = position.latitude;
+      double long = position.longitude;
+      final productRepository = ProductRepository();
+      final nearbyProducts = await productRepository.fetchNearbyProducts(long, lat);
+      final products = await productRepository.fetchProducts();
+
+      final combinedProducts = [...{...nearbyProducts, ...products}];
+
+      setState(() {
+        _combinedProducts = combinedProducts;
+        _isLoading = false; // Finaliza la carga
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false; // Finaliza la carga incluso si hay un error
+      });
+    }
   }
 
   @override
@@ -80,7 +92,6 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar eliminado del Scaffold principal
       body: FutureBuilder(
         future: Future.wait([_userIdFuture, _tokenFuture]),
         builder: (context, snapshot) {
@@ -100,7 +111,7 @@ class HomeScreenState extends State<HomeScreen> {
           final token = snapshot.data![1]!;
 
           final List<Widget> screens = [
-            HomeContent(searchQuery: _searchNotifier.value, products: _combinedProducts), // Pasa searchQuery
+            HomeContent(searchQuery: _searchNotifier.value, products: _combinedProducts, isLoading: _isLoading,),
             PublishProductScreen(),
             ChatListScreen(),
             ProfileScreen(userId: userId, token: token),

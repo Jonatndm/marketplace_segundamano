@@ -11,6 +11,7 @@ class AuthRepository {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', authData['token']);
         await prefs.setString('userId', authData['userId']);
+        await prefs.setInt('tokenTimestamp', DateTime.now().millisecondsSinceEpoch);
         return authData;
       }
       return null;
@@ -38,6 +39,7 @@ class AuthRepository {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', authData['token']);
         await prefs.setString('userId', authData['userId']);
+        await prefs.setInt('tokenTimestamp', DateTime.now().millisecondsSinceEpoch);
         return authData;
       }
       return null;
@@ -76,5 +78,6 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('userId');
+    await prefs.remove('tokenTimestamp');
   }
 }

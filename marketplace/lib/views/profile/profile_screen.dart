@@ -29,6 +29,7 @@ class ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
     await prefs.remove('userId');
+    await prefs.remove('tokenTimestamp');
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.clearAuthData();

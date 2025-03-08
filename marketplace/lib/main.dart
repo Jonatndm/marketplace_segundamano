@@ -17,13 +17,29 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token');
   final userId = prefs.getString('userId');
+  final tokenTimestamp = prefs.getInt('tokenTimestamp');
   // await dotenv.load(fileName: ".env");
+
+  bool isTokenExpired = false;
+
+  if (token != null && userId != null && tokenTimestamp != null) {
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final tokenAge = currentTime - tokenTimestamp;
+    isTokenExpired = tokenAge > 3600 * 1000;
+
+    if (isTokenExpired) {
+      // Eliminar el token y el userId si ha expirado
+      await prefs.remove('token');
+      await prefs.remove('userId');
+      await prefs.remove('tokenTimestamp');
+    }
+  }
 
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MainApp(
-        isLoggedIn: token != null && userId != null,
+        isLoggedIn: token != null && userId != null && !isTokenExpired,
         authData:
             token != null && userId != null
                 ? {'token': token, 'userId': userId}
