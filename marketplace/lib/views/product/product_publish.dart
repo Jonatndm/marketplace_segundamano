@@ -285,7 +285,8 @@ class PublishProductScreenState extends State<PublishProductScreen> {
               // Botón para enviar el formulario
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Publicar Producto'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                child: Text('Publicar Producto', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),

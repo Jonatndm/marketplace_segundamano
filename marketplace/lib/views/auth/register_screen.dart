@@ -61,7 +61,7 @@ class RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Sign Up")),
+      appBar: AppBar(title: Text("Registrarse")),
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: SingleChildScrollView(
@@ -161,7 +161,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                         alignment: Alignment.bottomLeft,
                         child: GestureDetector(
                           child: const Text(
-                            'By signing up, you agree to our Terms & conditions and Privacy Policy',
+                            'Al registrarte, aceptas nuestros Términos y condiciones y Política de privacidad.',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -183,6 +183,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        backgroundColor: Colors.indigo
                       ),
                       child:
                           _isLoading
@@ -190,7 +191,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                               : const Center(
                                 child: Text(
                                   "Registrarse",
-                                  style: TextStyle(fontSize: 15),
+                                  style: TextStyle(fontSize: 15, color: Colors.white),
                                 ),
                               ),
                     ),
@@ -203,7 +204,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            "Joined us before? ",
+                            "Ya se ha unido antes? ",
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -212,7 +213,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                           ),
                           GestureDetector(
                             child: const Text(
-                              "Sign In",
+                              "Ingresa",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

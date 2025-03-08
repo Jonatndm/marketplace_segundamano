@@ -107,7 +107,7 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
                           )
                           : const Icon(Icons.image),
                   title: Text(product.name),
-                  subtitle: Text(product.description),
+                  subtitle: Text(product.description, maxLines: 2),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

@@ -75,7 +75,7 @@ class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Container(
                 alignment: Alignment.centerLeft,
                 child: const Text(
-                  'Forgot \nPassword?',
+                  'Has olvidado \ntu contraseña?',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 40,
@@ -87,7 +87,7 @@ class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Container(
                 alignment: Alignment.centerLeft,
                 child: const Text(
-                  "Don't worry! It happens. Please enter the \naddress associated with the account.",
+                  "Introduce la dirección asociada a la cuenta.",
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ),
@@ -117,9 +117,10 @@ class ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      backgroundColor: Colors.indigo
                     ),
                     child: const Center(
-                      child: Text("Reset", style: TextStyle(fontSize: 15)),
+                      child: Text("Resetear", style: TextStyle(fontSize: 15, color: Colors.white)),
                     ),
                   ),
             ],

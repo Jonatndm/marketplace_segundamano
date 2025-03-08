@@ -63,9 +63,9 @@ class ProductSearchDelegate extends SearchDelegate<String> {
       padding: const EdgeInsets.all(8.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2, // Número de columnas
-        crossAxisSpacing: 8.0, // Espaciado horizontal entre elementos
-        mainAxisSpacing: 8.0, // Espaciado vertical entre elementos
-        childAspectRatio: 0.7, // Relación de aspecto (ancho/alto)
+        crossAxisSpacing: 3.0, // Espaciado horizontal entre elementos
+        mainAxisSpacing: 0.3, // Espaciado vertical entre elementos
+        childAspectRatio: 0.57, // Relación de aspecto (ancho/alto)
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {

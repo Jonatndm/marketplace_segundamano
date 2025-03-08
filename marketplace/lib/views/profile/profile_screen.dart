@@ -17,12 +17,12 @@ class ProfileScreen extends StatefulWidget {
 
 class ProfileScreenState extends State<ProfileScreen> {
   late Future<User> _userFuture;
-  final UserRepository _userRepository = UserRepository(); // Usa el repositorio
+  final UserRepository _userRepository = UserRepository();
 
   @override
   void initState() {
     super.initState();
-    _userFuture = _userRepository.getUser(widget.userId, widget.token); // Llama al repositorio
+    _userFuture = _userRepository.getUser(widget.userId, widget.token);
   }
 
   void _logout() async {
@@ -44,83 +44,100 @@ class ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Mi Perfil'),
         automaticallyImplyLeading: false,
       ),
-      body: FutureBuilder<User>(
-        future: _userFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('No se encontraron datos'));
-          }
-
-          final user = snapshot.data!;
-
-          return Column(
-            children: [
-              // Sección de la imagen y nombre
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    // Círculo con la imagen del usuario
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: NetworkImage(user.avatar ?? ""),
-                    ),
-                    const SizedBox(width: 16),
-                    // Nombre del usuario
-                    Text(
-                      user.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Línea horizontal
-              const Divider(height: 1, thickness: 1),
-              // Opciones de perfil
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Editar Perfil'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/edit-profile');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.shopping_bag),
-                title: const Text('Mis Productos Publicados'),
-                onTap: () {
-                  Navigator.pushNamed(context, '/my-products');
-                },
-              ),
-              const Spacer(),
-              // Botón de desloguearse
-              Center(
-                child: Padding(
+      body: Column(
+        children: [
+          // Sección de la imagen y nombre (cargada dinámicamente)
+          FutureBuilder<User>(
+            future: _userFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                    onPressed: _logout,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
-                        vertical: 15,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.grey[300],
                       ),
-                    ),
-                    child: const Text(
-                      'Cerrar Sesión',
-                      style: TextStyle(fontSize: 16),
+                      const SizedBox(width: 16),
+                      Container(
+                        height: 20,
+                        width: 100,
+                        color: Colors.grey[300],
+                      ),
+                    ],
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData) {
+                return const Center(child: Text('No se encontraron datos'));
+              }
+
+              final user = snapshot.data!;
+
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(user.avatar ?? ""),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          user.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  const Divider(height: 1, thickness: 1),
+                  ListTile(
+                    leading: const Icon(Icons.edit),
+                    title: const Text('Editar Perfil'),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/edit-profile');
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.shopping_bag),
+                    title: const Text('Mis Productos Publicados'),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/my-products');
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          const Spacer(),
+          // Botón de cerrar sesión (siempre visible)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 15,
+                  ),
+                  backgroundColor: Colors.red
+                ),
+                child: const Text(
+                  'Cerrar Sesión',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

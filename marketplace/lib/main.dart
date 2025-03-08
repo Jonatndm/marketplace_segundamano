@@ -47,7 +47,7 @@ class MainApp extends StatelessWidget {
     }
 
     return MaterialApp(
-      title: 'Marketplace de Segunda Mano',
+      title: 'ReMarket',
       debugShowCheckedModeBanner: false,
       initialRoute: isLoggedIn ? Routes.home : '/',
       routes: {

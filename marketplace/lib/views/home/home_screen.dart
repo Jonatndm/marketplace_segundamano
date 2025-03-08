@@ -4,7 +4,6 @@ import 'package:marketplace/models/product.dart';
 import 'package:marketplace/repository/product_repository.dart';
 import 'package:marketplace/views/chat/chat_list_screen.dart';
 import 'package:marketplace/views/product/product_publish.dart';
-import 'package:marketplace/views/product/product_search_delegate.dart';
 import 'package:marketplace/views/profile/profile_screen.dart';
 import 'package:marketplace/widgets/home_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,33 +20,31 @@ class HomeScreenState extends State<HomeScreen> {
   late Future<String?> _userIdFuture;
   late Future<String?> _tokenFuture;
   final ValueNotifier<String> _searchNotifier = ValueNotifier('');
-  List<Product> _products = [];
-  List<Product> _nearbyProducts = [];
   List<Product> _combinedProducts = [];
 
   Future<void> _loadProducts() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception('Los servicios de ubicación están desactivados.');
-      }
+    if (!serviceEnabled) {
+      throw Exception('Los servicios de ubicación están desactivados.');
+    }
 
-      LocationPermission permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Los permisos de ubicación fueron denegados.');
-        }
+        throw Exception('Los permisos de ubicación fueron denegados.');
       }
+    }
 
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Los permisos de ubicación están denegados permanentemente.');
-      }
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
-      );
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Los permisos de ubicación están denegados permanentemente.');
+    }
+    Position position = await Geolocator.getCurrentPosition(
+      locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
+    );
 
-      double lat = position.latitude;
-      double long = position.longitude;
+    double lat = position.latitude;
+    double long = position.longitude;
     final productRepository = ProductRepository();
     final nearbyProducts = await productRepository.fetchNearbyProducts(long, lat);
 
@@ -55,11 +52,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final combinedProducts = [...{...nearbyProducts, ...products}];
 
-
-
     setState(() {
-      _nearbyProducts = nearbyProducts;
-      _products = products;
       _combinedProducts = combinedProducts;
     });
   }
@@ -87,24 +80,7 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Productos de Segunda Mano'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: ProductSearchDelegate(
-                  searchNotifier: _searchNotifier,
-                  products: _combinedProducts,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      // AppBar eliminado del Scaffold principal
       body: FutureBuilder(
         future: Future.wait([_userIdFuture, _tokenFuture]),
         builder: (context, snapshot) {

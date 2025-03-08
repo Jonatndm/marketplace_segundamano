@@ -41,7 +41,7 @@ class LoginScreenState extends State<LoginScreen> {
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error en el login')));
+        ).showSnackBar(SnackBar(content: Text('Email y/o Contraseña incorrecta')));
       }
     } catch (error) {
       if (mounted) {
@@ -60,7 +60,8 @@ class LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("MarketPlace de Segunda Mano"),
+        title: Text("ReMarket", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       backgroundColor: Colors.white,
@@ -136,7 +137,7 @@ class LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.bottomRight,
                         child: GestureDetector(
                           child: const Text(
-                            'Forgot Password?',
+                            'Olvidaste la Contraseña?',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
@@ -164,13 +165,17 @@ class LoginScreenState extends State<LoginScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        backgroundColor: Colors.indigo
                       ),
                       child:
                           _isLoading
                               ? CircularProgressIndicator()
                               : const Text(
-                                "Login",
-                                style: TextStyle(fontSize: 15),
+                                "Loguearse",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white
+                                  ),
                               ),
                     ),
                     const SizedBox(height: 15),
@@ -180,7 +185,7 @@ class LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            "New to the App? ",
+                            "Nuevo en la aplicacion? ",
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -189,7 +194,7 @@ class LoginScreenState extends State<LoginScreen> {
                           ),
                           GestureDetector(
                             child: const Text(
-                              "Register",
+                              "Registrarse",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,

@@ -5,7 +5,7 @@ import 'package:marketplace/models/product.dart';
 
 class ProductService {
   // static const String baseUrl = 'http://localhost:5000/api';
-  static const String baseUrl = 'http://192.168.4.30:5000/api';
+  static const String baseUrl = 'http://192.168.100.3:5000/api';
 
   Future<List<Product>> fetchProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/products'));
