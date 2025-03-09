@@ -31,7 +31,8 @@ router.post('/register', async (req, res) => {
       verificationCode,
     });
 
-    await bcrypt.hash(newPassword, salt)
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
     await user.save();
     // Enviar código por correo
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
