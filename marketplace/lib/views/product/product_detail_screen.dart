@@ -183,7 +183,7 @@ class ProductDetailScreen extends StatelessWidget {
 
             // Vendedor del producto
             Text(
-              'Vendedor: ${product.seller.name}',
+              'Vendedor: ${product.seller?.name}',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
