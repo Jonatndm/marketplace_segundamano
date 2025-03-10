@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace/providers/auth_provider.dart';
 import 'package:marketplace/repository/auth_repository.dart';
 import 'package:marketplace/routes.dart';
-import 'package:pin_code_fields/pin_code_fields.dart'; // Importar el paquete OTP Field
+import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart'; // Importar el paquete OTP Field
 
 class VerifyCodeScreen extends StatefulWidget {
   final String email;
@@ -30,7 +32,8 @@ class VerifyCodeScreenState extends State<VerifyCodeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await _authRepository.verifyCode(widget.email, code);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final response = await _authRepository.verifyCode(widget.email, code,authProvider);
 
       if (response != null) {
         Navigator.pushReplacementNamed(context, Routes.home);

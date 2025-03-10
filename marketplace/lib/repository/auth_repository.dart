@@ -1,10 +1,11 @@
 import 'package:marketplace/core/services/auth_service.dart';
+import 'package:marketplace/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
   final AuthService _authService = AuthService();
 
-  Future<Map<String, dynamic>?> login(String email, String password) async {
+  Future<Map<String, dynamic>?> login(String email, String password, AuthProvider authProvider) async {
     try {
       final authData = await _authService.login(email, password);
       if (authData != null) {
@@ -12,6 +13,13 @@ class AuthRepository {
         await prefs.setString('token', authData['token']);
         await prefs.setString('userId', authData['userId']);
         await prefs.setInt('tokenTimestamp', DateTime.now().millisecondsSinceEpoch);
+
+        final userid = authData['userId'];
+        final token = authData['token'];
+
+        //Provider con los datos 
+        authProvider.setAuthData(token, userid);
+
         return authData;
       }
       return null;
@@ -32,7 +40,7 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>?> verifyCode(String email, String code) async {
+  Future<Map<String, dynamic>?> verifyCode(String email, String code, AuthProvider authProvider) async {
     try {
       final authData = await _authService.verifyCode(email, code);
       if (authData != null) {
@@ -40,6 +48,9 @@ class AuthRepository {
         await prefs.setString('token', authData['token']);
         await prefs.setString('userId', authData['userId']);
         await prefs.setInt('tokenTimestamp', DateTime.now().millisecondsSinceEpoch);
+
+        //Provider con los datos 
+        authProvider.setAuthData(authData['token'], authData['userId']);
         return authData;
       }
       return null;

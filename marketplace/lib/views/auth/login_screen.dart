@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace/providers/auth_provider.dart';
 import 'package:marketplace/repository/auth_repository.dart';
 import 'package:marketplace/routes.dart';
 import 'package:marketplace/views/auth/forgot_password_screen.dart';
 import 'package:marketplace/views/auth/register_screen.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,7 +34,8 @@ class LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final authData = await _authRepository.login(email, password);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authData = await _authRepository.login(email, password, authProvider);
       if (authData != null) {
         // Navegar a la pantalla de inicio
         if (mounted) {

@@ -41,7 +41,6 @@ class HomeScreenState extends State<HomeScreen> {
           throw Exception('Los permisos de ubicación fueron denegados.');
         }
       }
-
       if (permission == LocationPermission.deniedForever) {
         throw Exception('Los permisos de ubicación están denegados permanentemente.');
       }
@@ -111,7 +110,11 @@ class HomeScreenState extends State<HomeScreen> {
           final token = snapshot.data![1]!;
 
           final List<Widget> screens = [
-            HomeContent(searchQuery: _searchNotifier.value, products: _combinedProducts, isLoading: _isLoading,),
+            RefreshIndicator(
+              onRefresh: _loadProducts,
+              child: HomeContent
+              (searchQuery: _searchNotifier.value, products: _combinedProducts, isLoading: _isLoading), 
+            ),
             PublishProductScreen(),
             ChatListScreen(),
             ProfileScreen(userId: userId, token: token),
