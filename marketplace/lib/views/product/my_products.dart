@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marketplace/views/product/product_publish.dart';
 import 'package:provider/provider.dart';
 import 'package:marketplace/models/product.dart';
 import 'package:marketplace/repository/product_repository.dart';
@@ -34,11 +35,15 @@ class _MyProductsScreenState extends State<MyProductsScreen> {
   }
 
   void _editProduct(Product product) {
-    // Navegar a la pantalla de edición de producto
-    Navigator.pushNamed(context, '/edit-product', arguments: product).then((_) {
-      _refreshProducts(); // Refrescar la lista después de editar
-    });
-  }
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PublishProductScreen(product: product),
+    ),
+  ).then((_) {
+    _refreshProducts(); // Refrescar la lista después de editar
+  });
+}
 
   void _markAsSold(String productId) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);

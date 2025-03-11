@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:marketplace/repository/product_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:marketplace/models/product.dart'; // Asegúrate de importar el modelo Product
 
 class PublishProductScreen extends StatefulWidget {
-  const PublishProductScreen({super.key});
+  final Product? product;
+  const PublishProductScreen({super.key, this.product});
 
   @override
   PublishProductScreenState createState() => PublishProductScreenState();
@@ -14,7 +16,7 @@ class PublishProductScreen extends StatefulWidget {
 
 class PublishProductScreenState extends State<PublishProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  final List<File> _images = [];
+  List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
 
   String _title = '';
@@ -23,12 +25,26 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   double? _latitude;
   double? _longitude;
   List<String> _categories = ['Electrónica'];
-  final ProductRepository _productRepository = ProductRepository(); // Usa el repositorio
+  final ProductRepository _productRepository = ProductRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    _getLocation();
+
+    // Si se proporciona un producto, cargar sus datos
+    if (widget.product != null) {
+      _title = widget.product!.name;
+      _description = widget.product!.description;
+      _price = widget.product!.price;
+      _categories = widget.product!.categories;
+      _images = widget.product!.images.map((image) => File(image)).toList();
+    }
+  }
 
   // Método para obtener la ubicación
   Future<void> _getLocation() async {
     try {
-      // Verifica los permisos de ubicación
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('El servicio de ubicación está desactivado');
@@ -46,7 +62,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
         throw Exception('Permisos de ubicación denegados permanentemente');
       }
 
-      // Obtiene la ubicación actual
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: LocationSettings(accuracy: LocationAccuracy.high),
       );
@@ -84,7 +99,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // Verifica si se obtuvo la ubicación
       if (_latitude == null || _longitude == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: No se pudo obtener la ubicación')),
@@ -93,7 +107,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
       }
 
       try {
-        // Obtén el token y el userId desde SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         final token = prefs.getString('token');
         final userId = prefs.getString('userId');
@@ -102,7 +115,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
           throw Exception('Usuario no autenticado');
         }
 
-        // Convertir las imágenes a rutas
         List<String> imagePaths = _images.map((file) => file.path).toList();
 
         if (imagePaths.length > 5) {
@@ -112,33 +124,54 @@ class PublishProductScreenState extends State<PublishProductScreen> {
           return;
         }
 
-        // Llamar al repositorio para crear el producto
-        await _productRepository.createProduct(
-          name: _title,
-          description: _description,
-          price: _price,
-          latitude: _latitude!,
-          longitude: _longitude!,
-          categories: _categories,
-          imagePaths: imagePaths,
-          token: token,
-        );
-
-        // Mostrar mensaje de éxito
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Producto creado correctamente')),
+        if (widget.product == null) {
+          // Crear un nuevo producto
+          await _productRepository.createProduct(
+            name: _title,
+            description: _description,
+            price: _price,
+            latitude: _latitude!,
+            longitude: _longitude!,
+            categories: _categories,
+            imagePaths: imagePaths,
+            token: token,
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Producto creado correctamente')),
+            );
+          }
+        } else {
+          // Editar un producto existente
+          await _productRepository.updateProduct(
+            productId: widget.product!.id,
+            name: _title,
+            description: _description,
+            price: _price,
+            categories: _categories,
+            imagePaths: imagePaths,
+            token: token,
+          );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Producto actualizado correctamente')),
+            );
+          }
         }
-        // Limpiar el formulario
+
         _formKey.currentState!.reset();
         setState(() {
           _images.clear();
         });
+        if(widget.product != null){
+          Navigator.pop(context);
+        }
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al crear el producto: $error')),
+            SnackBar(content: Text('Error al crear/actualizar el producto: $error')),
           );
         }
       }
@@ -146,18 +179,10 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    // Obtener la ubicación al iniciar la pantalla
-    _getLocation();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Publicar Producto'),
-        automaticallyImplyLeading: false,
+        title: Text(widget.product == null ? 'Publicar Producto' : 'Editar Producto'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -165,7 +190,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // Sección para subir imágenes
               Text(
                 'Subir imágenes (máximo 5)',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -178,7 +202,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                     )
                   : Text('Has alcanzado el límite de 5 imágenes'),
               SizedBox(height: 10),
-              // Mostrar las imágenes seleccionadas
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -205,12 +228,12 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 },
               ),
               SizedBox(height: 20),
-              // Campo para el título
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Título',
                   border: OutlineInputBorder(),
                 ),
+                initialValue: _title,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingresa un título';
@@ -222,12 +245,12 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 },
               ),
               SizedBox(height: 20),
-              // Campo para la descripción
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Descripción',
                   border: OutlineInputBorder(),
                 ),
+                initialValue: _description,
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -240,12 +263,12 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 },
               ),
               SizedBox(height: 20),
-              // Campo para el precio
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Precio',
                   border: OutlineInputBorder(),
                 ),
+                initialValue: _price.toString(),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -261,7 +284,6 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 },
               ),
               SizedBox(height: 20),
-              // Campo para la categoría
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'Categoría',
@@ -282,11 +304,13 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 },
               ),
               SizedBox(height: 20),
-              // Botón para enviar el formulario
               ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-                child: Text('Publicar Producto', style: TextStyle(color: Colors.white)),
+                child: Text(
+                  widget.product == null ? 'Publicar Producto' : 'Guardar Cambios',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),

@@ -57,7 +57,7 @@ class User {
       purchases: List<String>.from(json['purchases'] ?? []),
       sales: List<String>.from(
         json['salesPublish'] ?? [],
-      ), // Usa salesPublish en lugar de sales
+      ),
       chats: List<String>.from(json['chats'] ?? []),
       notifications: List<Notification>.from(
         json['notifications']?.map((x) => Notification.fromJson(x)) ?? [],
