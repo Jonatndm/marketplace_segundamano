@@ -52,13 +52,10 @@ class HomeScreenState extends State<HomeScreen> {
       double lat = position.latitude;
       double long = position.longitude;
       final productRepository = ProductRepository();
-      final nearbyProducts = await productRepository.fetchNearbyProducts(long, lat);
-      final products = await productRepository.fetchProducts();
-
-      final combinedProducts = [...{...nearbyProducts, ...products}];
+      final allproducts = await productRepository.fetchNearbyProducts(long, lat);
 
       setState(() {
-        _combinedProducts = combinedProducts;
+        _combinedProducts = allproducts;
         _isLoading = false; // Finaliza la carga
       });
     } catch (e) {

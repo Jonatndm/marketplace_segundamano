@@ -17,6 +17,7 @@ class PublishProductScreen extends StatefulWidget {
 class PublishProductScreenState extends State<PublishProductScreen> {
   final _formKey = GlobalKey<FormState>();
   List<File> _images = [];
+  List<String> _existingImageUrls = [];
   final ImagePicker _picker = ImagePicker();
 
   String _title = '';
@@ -30,17 +31,24 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   @override
   void initState() {
     super.initState();
-    _getLocation();
 
-    // Si se proporciona un producto, cargar sus datos
+    // Si estamos editando un producto, cargamos la ubicación desde el producto
     if (widget.product != null) {
       _title = widget.product!.name;
       _description = widget.product!.description;
       _price = widget.product!.price;
       _categories = widget.product!.categories;
-      _images = widget.product!.images.map((image) => File(image)).toList();
+      _existingImageUrls = widget.product!.images;
+
+      // Cargar la ubicación del producto (si está disponible)
+      if (widget.product!.location['coordinates'] != null && widget.product!.location['coordinates'].isNotEmpty) {
+        _latitude = widget.product!.location['coordinates'][1];  // Latitud
+        _longitude = widget.product!.location['coordinates'][0]; // Longitud
+      }
+    } else {
+      _getLocation();  // Solo obtener la ubicación si es un producto nuevo
     }
-  }
+}
 
   // Método para obtener la ubicación
   Future<void> _getLocation() async {
@@ -90,7 +98,11 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   // Método para eliminar una imagen
   void _removeImage(int index) {
     setState(() {
-      _images.removeAt(index);
+      if (index < _images.length) {
+        _images.removeAt(index);
+      } else {
+        _existingImageUrls.removeAt(index - _images.length);
+      }
     });
   }
 
@@ -116,6 +128,8 @@ class PublishProductScreenState extends State<PublishProductScreen> {
         }
 
         List<String> imagePaths = _images.map((file) => file.path).toList();
+        // Agregar las imágenes existentes (solo las que no fueron eliminadas)
+        imagePaths.addAll(_existingImageUrls);
 
         if (imagePaths.length > 5) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -170,6 +184,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
         }
       } catch (error) {
         if (mounted) {
+          print(error);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error al crear/actualizar el producto: $error')),
           );
@@ -195,7 +210,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-              _images.length < 5
+              _images.length + _existingImageUrls.length < 5
                   ? ElevatedButton(
                       onPressed: _pickImages,
                       child: Text('Seleccionar imágenes'),
@@ -210,11 +225,14 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                   crossAxisSpacing: 4.0,
                   mainAxisSpacing: 4.0,
                 ),
-                itemCount: _images.length,
+                itemCount: _images.length + _existingImageUrls.length,
                 itemBuilder: (context, index) {
+                  bool isNewImage = index < _images.length;
                   return Stack(
                     children: [
-                      Image.file(_images[index], fit: BoxFit.cover),
+                      isNewImage
+                          ? Image.file(_images[index], fit: BoxFit.cover)
+                          : Image.network(_existingImageUrls[index - _images.length], fit: BoxFit.cover),
                       Positioned(
                         top: 0,
                         right: 0,

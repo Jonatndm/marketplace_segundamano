@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:marketplace/models/product.dart';
+import 'package:mime/mime.dart';
 
 class ProductService {
   // static const String baseUrl = 'http://localhost:5000/api';
-  static const String baseUrl = 'http://192.168.100.3:5000/api';
+  static const String baseUrl = 'http://192.168.4.21:5000/api';
 
   Future<List<Product>> fetchProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/products'));
@@ -129,6 +130,24 @@ class ProductService {
     }
   }
 
+   Future<Product> getProductById(String productId, String token) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/$productId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = json.decode(response.body);
+      dynamic productsData = data['products'];
+      return Product.fromJson(productsData);
+    } else {
+      throw Exception('Failed to load user products');
+    }
+  }
+
   Future<void> markProductAsSold(String productId, String token) async {
     final response = await http.put(
       Uri.parse('$baseUrl/products/$productId/sold'),
@@ -166,47 +185,57 @@ class ProductService {
     required String description,
     required double price,
     required List<String> categories,
-    required List<String> imagePaths,
+    required List<String>
+    imagePaths, // Contiene imágenes nuevas y URLs de imágenes que se mantienen
     required String token,
   }) async {
     try {
+      // 1️⃣ Filtrar imágenes nuevas y URLs
+      List<String> newImages =
+          imagePaths.where((path) => !path.startsWith('http')).toList();
+      List<String> existingImageUrls =
+          imagePaths.where((path) => path.startsWith('http')).toList();
+
+      // 2️⃣ Crear la solicitud
       var request = http.MultipartRequest(
         'PUT',
         Uri.parse('$baseUrl/products/$productId'),
       )..headers['Authorization'] = 'Bearer $token';
 
-      // Agregar campos del formulario
+      // 3️⃣ Agregar datos del formulario
       request.fields['name'] = name;
       request.fields['description'] = description;
       request.fields['price'] = price.toString();
       request.fields['categories'] = categories.join(',');
 
-      // Agregar imágenes
-      for (var imagePath in imagePaths) {
+      // 4️⃣ Agregar imágenes nuevas
+      for (var imagePath in newImages) {
+        var mimeType = lookupMimeType(imagePath) ?? 'image/jpeg';
         var file = await http.MultipartFile.fromPath(
           'images',
           imagePath,
-          contentType: MediaType(
-            'image',
-            'jpeg',
-          ), // Ajusta el tipo MIME según el formato de la imagen
+          contentType: MediaType.parse(mimeType),
         );
         request.files.add(file);
       }
 
+      // 5️⃣ Enviar las imágenes existentes como URLs
+      request.fields['existingImages'] = existingImageUrls.join(',');
+
+      // 6️⃣ Enviar la solicitud
       var response = await request.send();
 
       if (response.statusCode == 200) {
-        // Producto actualizado exitosamente
-        return;
+        print("✅ Producto actualizado con éxito");
       } else {
         var responseBody = await response.stream.bytesToString();
         throw Exception(
-          'Error al actualizar el producto: ${response.statusCode} - $responseBody',
+          '❌ Error al actualizar: ${response.statusCode} - $responseBody',
         );
       }
     } catch (error) {
-      throw Exception('Error al enviar la solicitud: $error');
+      throw Exception('❌ Error al actualizar producto: $error');
     }
   }
+
 }
