@@ -43,7 +43,7 @@ class ProductRepository {
   }
 
   // Crear un nuevo producto
-  Future<Product> createProduct({
+  Future<void> createProduct({
     required String name,
     required String description,
     required double price,

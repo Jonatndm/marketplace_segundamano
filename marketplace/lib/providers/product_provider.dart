@@ -41,7 +41,7 @@ class ProductProvider with ChangeNotifier {
         token: '', // Asegúrate de pasar el token correcto aquí
       );
 
-      _products.add(newProduct);
+      //_products.add(newProduct);
       notifyListeners();
     } catch (e) {
       _error = 'Error al agregar producto: ${e.toString()}';
