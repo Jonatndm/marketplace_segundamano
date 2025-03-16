@@ -8,7 +8,6 @@ const authenticateUser = require('../utils/authenticated');
 const router = express.Router();
 const dotenv = require('dotenv');
 
-
 dotenv.config();
 
 cloudinary.config({
@@ -35,6 +34,19 @@ const upload = multer({
     cb(allowedTypes.includes(file.mimetype) ? null : new Error('Tipo de archivo no permitido'), allowedTypes.includes(file.mimetype));
   }
 });
+
+// Función para calcular la distancia en kilómetros entre dos coordenadas (Haversine)
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const toRad = angle => (Math.PI / 180) * angle;
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 // Crear un producto
 router.post('/', authenticateUser, upload.array('images', 5), async (req, res) => {
@@ -75,29 +87,31 @@ router.post('/', authenticateUser, upload.array('images', 5), async (req, res) =
 
 // Obtener productos cercanos a una ubicación
 router.get('/nearby', async (req, res) => {
-  const { latitude, longitude, maxDistance = 15000 } = req.query;
+  const { latitude, longitude } = req.query;
 
   if (!latitude || !longitude) {
     return res.status(400).json({ message: 'Latitud y longitud son requeridas' });
   }
 
   try {
-    const products = await Product.find({
-      location: {
-        $near: {
-          $geometry: { type: 'Point', coordinates: [parseFloat(longitude), parseFloat(latitude)] },
-          $maxDistance: parseInt(maxDistance)
-        }
-      }
-    }).populate('seller', 'name email');
+    const products = await Product.find().populate('seller', 'name email');
 
-    res.json({ products });
+    // Calcular distancia manualmente si no usamos $geoNear
+    const sortedProducts = products.map(product => {
+      if (product.location && product.location.coordinates) {
+        const [long, lat] = product.location.coordinates;
+        const distance = haversineDistance(parseFloat(latitude), parseFloat(longitude), lat, long);
+        return { ...product.toObject(), distance };
+      }
+      return { ...product.toObject(), distance: Infinity }; // Si no tiene ubicación, lo ponemos al final
+    }).sort((a, b) => a.distance - b.distance);
+
+    res.json({ products: sortedProducts });
   } catch (error) {
-    console.error('Error al obtener productos cercanos:', error.message);
-    res.status(500).json({ message: 'Error al obtener productos cercanos', error: error.message });
+    console.error('Error al obtener productos:', error.message);
+    res.status(500).json({ message: 'Error al obtener productos', error: error.message });
   }
 });
-
 // Obtener todos los productos
 router.get('/', async (req, res) => {
   try {
@@ -111,7 +125,7 @@ router.get('/', async (req, res) => {
 
 // Actualizar producto
 router.put('/:id', authenticateUser, upload.array('images', 5), async (req, res) => {
-  const { name, description, price, categories } = req.body;
+  const { name, description, price, categories, existingImages } = req.body;
   const images = req.files?.map(file => file.path) ?? [];
 
   try {
@@ -120,11 +134,17 @@ router.put('/:id', authenticateUser, upload.array('images', 5), async (req, res)
     if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
     if (product.seller.toString() !== req.user.id) return res.status(403).json({ message: 'No tienes permiso para actualizar este producto' });
 
+    // 🔹 Convertir `existingImages` a array si es un string
+    let existingImageUrls = [];
+    if (existingImages) {
+      existingImageUrls = Array.isArray(existingImages) ? existingImages : existingImages.split(",");
+    }
+    product.images = [...existingImageUrls, ...images];
+
     product.name = name ?? product.name;
     product.description = description ?? product.description;
     product.price = price ? parseFloat(price) : product.price;
     if (categories) product.categories = categories.split(',').map(cat => cat.trim());
-    if (images.length) product.images = images;
 
     await product.save();
     res.json({ message: 'Producto actualizado', product });
@@ -210,6 +230,18 @@ router.put('/:id/sold', authenticateUser, async (req, res) => {
     res.status(500).json({ message: 'Error al marcar el producto como vendido', error: error.message });
   }
 });
+
+router.get('/:id', authenticateUser, async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const products = await Product.findById(productId).populate('seller', 'name email');
+    res.json({ products });
+  } catch (error) {
+    console.error('Error al marcar el producto como vendido:', error.message);
+    res.status(500).json({ message: 'Error al marcar el producto como vendido', error: error.message });
+  }
+});
+
 
 
 module.exports = router;
