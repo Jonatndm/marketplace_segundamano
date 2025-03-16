@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:marketplace/models/product.dart';
 import 'package:marketplace/core/services/product_service.dart';
 
@@ -9,7 +11,8 @@ class ProductRepository {
     try {
       return await _productService.fetchProducts();
     } catch (error) {
-      throw Exception('Failed to fetch products: $error');
+      print('Error al obtener productos: $error');
+      return [];
     }
   }
 
@@ -40,7 +43,7 @@ class ProductRepository {
   }
 
   // Crear un nuevo producto
-  Future<void> createProduct({
+  Future<Product> createProduct({
     required String name,
     required String description,
     required double price,
@@ -92,8 +95,13 @@ class ProductRepository {
 
   Future<void> updateProduct({
     required String productId,
-    required String name,required String description, 
-    required double price, required List<String> categories,required List<String> imagePaths, required String token, }) async {
+    required String name,
+    required String description,
+    required double price,
+    required List<String> categories,
+    required List<String> imagePaths,
+    required String token,
+  }) async {
     try {
       await _productService.updateProduct(
         productId: productId,

@@ -7,6 +7,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const profileroutes = require('./routes/profile');
+const chatRoutes = require('./routes/chat');
 const path = require('path');
 
 
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/profile', profileroutes);
+app.use('/api/chat',chatRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
