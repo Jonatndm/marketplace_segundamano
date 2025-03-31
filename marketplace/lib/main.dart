@@ -71,7 +71,6 @@ class MainApp extends StatelessWidget {
         Routes.register: (context) => RegisterScreen(),
         Routes.home: (context) => HomeScreen(),
         Routes.myProducts: (context) => MyProductsScreen(),
-        Routes.perfilEdit: (context) => ProfileEdit(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == Routes.productDetail) {
@@ -83,6 +82,13 @@ class MainApp extends StatelessWidget {
           final product = settings.arguments as Product;
           return MaterialPageRoute(
             builder: (context) => ChatScreen(product: product),
+          );
+        } else if (settings.name == Routes.perfilEdit) {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder:
+                (context) =>
+                    ProfileEdit(user: args['user'], token: args['token']),
           );
         }
         return null;

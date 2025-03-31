@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:marketplace/models/user.dart';
 import 'package:marketplace/providers/auth_provider.dart';
 import 'package:marketplace/repository/user_repository.dart';
+import 'package:marketplace/routes.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,7 +77,7 @@ class ProfileScreenState extends State<ProfileScreen> {
               }
 
               final user = snapshot.data!;
-
+              print(user.avatar);
               return Column(
                 children: [
                   Padding(
@@ -103,7 +104,17 @@ class ProfileScreenState extends State<ProfileScreen> {
                     leading: const Icon(Icons.edit),
                     title: const Text('Editar Perfil'),
                     onTap: () {
-                      Navigator.pushNamed(context, '/edit-profile');
+                      Navigator.pushNamed(
+                        context,
+                        Routes.perfilEdit,
+                        arguments: {
+                          'user':
+                              user, // user es el objeto User obtenido en ProfileScreen
+                          'token':
+                              widget
+                                  .token, // token es el token pasado a ProfileScreen
+                        },
+    );
                     },
                   ),
                   ListTile(
