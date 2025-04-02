@@ -14,10 +14,25 @@ class UserRepository {
     }
   }
 
-  Future<void> updateProfile(String userId, String name, String phone, String address, String bio, 
-  XFile? avatarFile, String token) async {
+  Future<void> updateProfile(
+    String userId,
+    String name,
+    String phone,
+    String address,
+    String bio,
+    XFile? avatarFile,
+    String token,
+  ) async {
     try {
-      await _userService.updateProfile(userId, name, phone, address, bio, avatarFile, token);
+      await _userService.updateProfile(
+        userId,
+        name,
+        phone,
+        address,
+        bio,
+        avatarFile,
+        token,
+      );
     } catch (error) {
       throw Exception('Failed to update product: $error');
     }

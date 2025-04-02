@@ -54,7 +54,7 @@ class _ProfileEditState extends State<ProfileEdit> {
 
   Future<void> _saveProfile() async {
     try {
-      final updateUser = await _userRepository.updateProfile(
+      await _userRepository.updateProfile(
         widget.user.id,
         _nameController.text,
         _phoneController.text,
@@ -70,7 +70,7 @@ class _ProfileEditState extends State<ProfileEdit> {
       );
 
       // Regresar a la pantalla anterior
-      Navigator.pop(context, updateUser);
+      Navigator.pop(context);
     } catch (error) {
       // Mostrar mensaje de error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -85,10 +85,7 @@ class _ProfileEditState extends State<ProfileEdit> {
       appBar: AppBar(
         title: const Text('Editar Perfil'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveProfile,
-          ),
+          IconButton(icon: const Icon(Icons.save), onPressed: _saveProfile),
         ],
       ),
       body: Padding(
@@ -100,11 +97,13 @@ class _ProfileEditState extends State<ProfileEdit> {
                 onTap: _pickImage,
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: _avatarFile != null
-                      ? FileImage(File(_avatarFile!.path)) as ImageProvider
-                      : widget.user.avatar != null
+                  backgroundImage:
+                      _avatarFile != null
+                          ? FileImage(File(_avatarFile!.path)) as ImageProvider
+                          : widget.user.avatar != null
                           ? NetworkImage(widget.user.avatar!)
-                          : const AssetImage('assets/images/avatar-default.jpg') as ImageProvider,
+                          : const AssetImage('assets/images/avatar-default.jpg')
+                              as ImageProvider,
                   child: const Icon(Icons.camera_alt, color: Colors.white),
                 ),
               ),

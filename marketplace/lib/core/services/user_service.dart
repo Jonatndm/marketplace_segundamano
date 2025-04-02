@@ -39,27 +39,34 @@ class UserService {
     }
   }
 
-  Future<void> updateProfile(String userId, String name, String phone, String address, String bio, 
-  XFile? avatarFile, String token) async {
-  final uri = Uri.parse('$baseUrl/$userId');
-  Map<String, String> headers = { "Authorization": "Bearer $token"};
-  final request = http.MultipartRequest('PUT', uri);
+  Future<void> updateProfile(
+    String userId,
+    String name,
+    String phone,
+    String address,
+    String bio,
+    XFile? avatarFile,
+    String token,
+  ) async {
+    final uri = Uri.parse('$baseUrl/$userId');
+    Map<String, String> headers = {"Authorization": "Bearer $token"};
+    final request = http.MultipartRequest('PUT', uri);
 
-  request.headers.addAll(headers);
-  // Agregar campos de texto
-  request.fields['name'] = name;
-  request.fields['phone'] = phone;
-  request.fields['address'] = address;
-  request.fields['bio'] = bio;
+    request.headers.addAll(headers);
+    // Agregar campos de texto
+    request.fields['name'] = name;
+    request.fields['phone'] = phone;
+    request.fields['address'] = address;
+    request.fields['bio'] = bio;
 
-  // Agregar archivo de imagen si existe
-  if (avatarFile != null) {
-    final file = await http.MultipartFile.fromPath('avatar', avatarFile.path);
-    request.files.add(file);
-  }
+    // Agregar archivo de imagen si existe
+    if (avatarFile != null) {
+      final file = await http.MultipartFile.fromPath('avatar', avatarFile.path);
+      request.files.add(file);
+    }
 
-  // Enviar la solicitud
-  final response = await request.send();
+    // Enviar la solicitud
+    final response = await request.send();
 
     if (response.statusCode == 200) {
       print('Perfil actualizado correctamente');
