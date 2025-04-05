@@ -23,7 +23,13 @@ class ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _userFuture = _userRepository.getUser(widget.userId, widget.token);
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    setState(() {
+      _userFuture = _userRepository.getUser(widget.userId, widget.token);
+    });
   }
 
   void _logout() async {
@@ -77,7 +83,6 @@ class ProfileScreenState extends State<ProfileScreen> {
               }
 
               final user = snapshot.data!;
-              print(user.avatar);
               return Column(
                 children: [
                   Padding(
@@ -86,7 +91,9 @@ class ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundImage: NetworkImage(user.avatar ?? ""),
+                          backgroundImage: user.avatar != null && user.avatar!.isNotEmpty
+                              ? NetworkImage(user.avatar!)
+                              : const AssetImage('assets/images/avatar-default.jpg') as ImageProvider,
                         ),
                         const SizedBox(width: 16),
                         Text(
@@ -103,18 +110,21 @@ class ProfileScreenState extends State<ProfileScreen> {
                   ListTile(
                     leading: const Icon(Icons.edit),
                     title: const Text('Editar Perfil'),
-                    onTap: () {
-                      Navigator.pushNamed(
+                    onTap: () async {
+                      // Esperar el resultado de la navegación
+                      final result = await Navigator.pushNamed(
                         context,
                         Routes.perfilEdit,
                         arguments: {
-                          'user':
-                              user, // user es el objeto User obtenido en ProfileScreen
-                          'token':
-                              widget
-                                  .token, // token es el token pasado a ProfileScreen
+                          'user': user,
+                          'token': widget.token,
                         },
-    );
+                      );
+                      
+                      // Si se actualizó el perfil, recargar los datos
+                      if (result == true) {
+                        _loadUserData();
+                      }
                     },
                   ),
                   ListTile(

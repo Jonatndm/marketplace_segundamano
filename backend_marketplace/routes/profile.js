@@ -48,7 +48,6 @@ router.put('/:userId', authenticateUser, upload.single('avatar'), async (req, re
     if (address) user.address = address;
     if (bio) user.bio = bio;
     // Subir nueva imagen de perfil a Cloudinary si se proporciona
-    console.log(req.file);
     if (req.file) {
       try {
         // Eliminar la imagen anterior de Cloudinary (opcional)

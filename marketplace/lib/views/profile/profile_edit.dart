@@ -22,6 +22,7 @@ class _ProfileEditState extends State<ProfileEdit> {
   late TextEditingController _bioController;
   XFile? _avatarFile;
   final UserRepository _userRepository = UserRepository();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -53,7 +54,12 @@ class _ProfileEditState extends State<ProfileEdit> {
   }
 
   Future<void> _saveProfile() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
+      // Actualizar el perfil en el backend
       await _userRepository.updateProfile(
         widget.user.id,
         _nameController.text,
@@ -69,13 +75,17 @@ class _ProfileEditState extends State<ProfileEdit> {
         const SnackBar(content: Text('Perfil actualizado correctamente')),
       );
 
-      // Regresar a la pantalla anterior
-      Navigator.pop(context);
+      // Regresar a la pantalla anterior con indicación de éxito
+      Navigator.pop(context, true);
     } catch (error) {
       // Mostrar mensaje de error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al actualizar el perfil: $error')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -85,7 +95,12 @@ class _ProfileEditState extends State<ProfileEdit> {
       appBar: AppBar(
         title: const Text('Editar Perfil'),
         actions: [
-          IconButton(icon: const Icon(Icons.save), onPressed: _saveProfile),
+          _isLoading 
+              ? const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(color: Colors.white),
+                )
+              : IconButton(icon: const Icon(Icons.save), onPressed: _saveProfile),
         ],
       ),
       body: Padding(
@@ -100,10 +115,10 @@ class _ProfileEditState extends State<ProfileEdit> {
                   backgroundImage:
                       _avatarFile != null
                           ? FileImage(File(_avatarFile!.path)) as ImageProvider
-                          : widget.user.avatar != null
-                          ? NetworkImage(widget.user.avatar!)
-                          : const AssetImage('assets/images/avatar-default.jpg')
-                              as ImageProvider,
+                          : widget.user.avatar != null && widget.user.avatar!.isNotEmpty
+                              ? NetworkImage(widget.user.avatar!)
+                              : const AssetImage('assets/images/avatar-default.jpg')
+                                  as ImageProvider,
                   child: const Icon(Icons.camera_alt, color: Colors.white),
                 ),
               ),

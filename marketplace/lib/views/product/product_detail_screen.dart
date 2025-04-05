@@ -24,6 +24,50 @@ class ProductDetailScreen extends StatelessWidget {
     }
   }
 
+  // Método para mostrar la imagen en pantalla completa
+  void _showFullScreenImage(BuildContext context, String imageUrl) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        pageBuilder: (BuildContext context, _, __) {
+          return GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              color: Colors.black.withOpacity(0.9),
+              child: Center(
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  boundaryMargin: const EdgeInsets.all(20),
+                  minScale: 0.5,
+                  maxScale: 3.0,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image, color: Colors.white, size: 50),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,21 +79,45 @@ class ProductDetailScreen extends StatelessWidget {
           children: [
             // Verifica si hay una sola imagen
             if (product.images.length == 1)
-              Container(
-                width: double.infinity,
-                height: 250.0,
-                margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    product.images[0],
-                    fit: BoxFit.cover,
-                    errorBuilder:
-                        (context, error, stackTrace) =>
-                            const Icon(Icons.broken_image),
+              GestureDetector(
+                onTap: () => _showFullScreenImage(context, product.images[0]),
+                child: Container(
+                  width: double.infinity,
+                  height: 250.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          product.images[0],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.broken_image),
+                        ),
+                        Positioned(
+                          right: 8,
+                          bottom: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(
+                              Icons.zoom_in,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -61,34 +129,54 @@ class ProductDetailScreen extends StatelessWidget {
                   enlargeCenterPage: true,
                   aspectRatio: 16 / 9,
                   viewportFraction: 0.9,
-                  enableInfiniteScroll:
-                      product.images.length >
-                      1, // Deshabilita el desplazamiento infinito si hay una sola imagen
+                  enableInfiniteScroll: product.images.length > 1,
                 ),
-                items:
-                    product.images.map((imageUrl) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          return Container(
-                            width: MediaQuery.of(context).size.width,
-                            margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8.0),
+                items: product.images.map((imageUrl) {
+                  return Builder(
+                    builder: (BuildContext context) {
+                      return GestureDetector(
+                        onTap: () => _showFullScreenImage(context, imageUrl),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.broken_image),
+                                ),
+                                Positioned(
+                                  right: 8,
+                                  bottom: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.6),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Icon(
+                                      Icons.zoom_in,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (context, error, stackTrace) =>
-                                        const Icon(Icons.broken_image),
-                              ),
-                            ),
-                          );
-                        },
+                          ),
+                        ),
                       );
-                    }).toList(),
+                    },
+                  );
+                }).toList(),
               ),
             const SizedBox(height: 16),
             // Nombre del producto
@@ -108,6 +196,11 @@ class ProductDetailScreen extends StatelessWidget {
             // Descripción del producto
             Text(product.description, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
+            
+            //Producto si fue vendido
+            if(product.sold)
+              Text('VENDIDO', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.red,)),
+            const SizedBox(height: 4),
 
             // Categorías del producto
             if (product.categories.isNotEmpty)
@@ -120,13 +213,12 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                   Wrap(
                     spacing: 8.0,
-                    children:
-                        product.categories.map((category) {
-                          return Chip(
-                            label: Text(category),
-                            backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
-                          );
-                        }).toList(),
+                    children: product.categories.map((category) {
+                      return Chip(
+                        label: Text(category),
+                        backgroundColor: Color.fromRGBO(6, 130, 255, 0.2),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
@@ -190,9 +282,8 @@ class ProductDetailScreen extends StatelessWidget {
 
             // Botón para contactar al vendedor
             ElevatedButton(
-              onPressed:
-                  () =>
-                      Navigator.pushNamed(context, '/chat', arguments: product),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/chat', arguments: product),
               child: const Text('Contactar al Vendedor'),
             ),
           ],
