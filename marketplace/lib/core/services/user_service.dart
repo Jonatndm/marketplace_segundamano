@@ -4,8 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:marketplace/models/user.dart';
 
 class UserService {
-  static const String baseUrl = 'http://192.168.100.4:5000/api/profile';
-  // static const String baseUrl = 'http://localhost:5000/api/profile';
+  // static const String baseUrl = 'http://192.168.100.4:5000/api/profile';
+  static const String baseUrl = 'http://localhost:5000/api/profile';
 
   Future<User> getUser(String userId, String token) async {
     final url = Uri.parse('$baseUrl/$userId');

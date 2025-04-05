@@ -7,17 +7,19 @@ import 'package:provider/provider.dart';
 
 class ChatListScreen extends StatelessWidget {
   const ChatListScreen({super.key});
+  static const String baseUrl = 'http://localhost:5000';
 
   Future<List<dynamic>> fetchChats(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.token;
+
 
     if (token == null || token.isEmpty) {
       throw Exception('No autenticado');
     }
 
     final response = await http.get(
-      Uri.parse('http://192.168.100.4:5000/api/chat/user/chats'),
+      Uri.parse('$baseUrl/api/chat/user/chats'),
       headers: {
         'Authorization': 'Bearer $token', // Usa el token obtenido desde el provider
       },

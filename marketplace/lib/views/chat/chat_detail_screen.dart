@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:marketplace/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'dart:convert';
+
 
 class ChatDetailScreen extends StatefulWidget {
   final String chatId;
@@ -15,11 +18,47 @@ class ChatDetailScreen extends StatefulWidget {
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   late TextEditingController _messageController;
+  late IO.Socket _socket;
+  late StreamController<List<dynamic>> _messagesController;
+  List<dynamic> _messages = []; 
+  static const String baseUrl = 'http://localhost:5000';
 
   @override
   void initState() {
     super.initState();
     _messageController = TextEditingController();
+    _messagesController = StreamController<List<dynamic>>();  // Inicializa el StreamController
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    _socket = IO.io(baseUrl, {
+      'transports': ['websocket'],
+      'autoConnect': false,
+      'auth': {
+        'token': authProvider.token,
+      }
+    });
+
+    // Conectar al socket y unirse al chat
+    _socket.connect();
+    _socket.on('newMessage', (data) {
+      // Agregar el nuevo mensaje a la lista y emitir la actualización
+      setState(() {
+        _messages.insert(0, data);  // Insertar el mensaje al principio
+        _messagesController.add(_messages);  // Emitir la lista actualizada
+      });
+    });
+
+    _socket.on('connect', (_) {
+      _socket.emit('joinChat', widget.chatId); // Unirse al chat
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _messagesController.close(); // Cerrar el StreamController
+    _socket.disconnect();
+    super.dispose();
   }
 
   Future<List<dynamic>> fetchChatMessages() async {
@@ -31,7 +70,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
 
     final response = await http.get(
-      Uri.parse('http://192.168.100.4:5000/api/chat/${widget.chatId}/messages'),
+      Uri.parse('$baseUrl/api/chat/${widget.chatId}/messages'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -53,7 +92,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
 
     final response = await http.post(
-      Uri.parse('http://192.168.100.4:5000/api/chat/${widget.chatId}/messages'),
+      Uri.parse('$baseUrl/api/chat/${widget.chatId}/messages'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -68,6 +107,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       setState(() {});
     } else {
       throw Exception('Error al enviar el mensaje');
+    }
+  }
+
+  void _sendMessage() {
+    final content = _messageController.text.trim();
+    if (content.isNotEmpty) {
+      _socket.emit('sendMessage', {
+        'chatId': widget.chatId,
+        'content': content,
+      });
+      _messageController.clear();
     }
   }
 
@@ -159,12 +209,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.send),
-                        onPressed: () {
-                          final content = _messageController.text.trim();
-                          if (content.isNotEmpty) {
-                            sendMessage(content);
-                          }
-                        },
+                        onPressed: _sendMessage,
                       ),
                     ],
                   ),
