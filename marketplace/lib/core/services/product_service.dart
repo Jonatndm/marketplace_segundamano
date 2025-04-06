@@ -238,4 +238,25 @@ class ProductService {
       throw Exception('❌ Error al actualizar producto: $error');
     }
   }
+
+  Future<String> getOrCreateChat(
+    String productId,
+    String sellerId,
+    String token,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chat/init'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({'productId': productId, 'sellerId': sellerId}),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['_id'];
+    } else {
+      throw Exception('No se pudo obtener el chat');
+    }
+  }
 }

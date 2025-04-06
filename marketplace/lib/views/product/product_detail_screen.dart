@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart' as carousel;
 import 'package:marketplace/repository/opencage_repository.dart';
+import 'package:marketplace/repository/product_repository.dart';
+import 'package:marketplace/views/chat/chat_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/product.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -282,8 +285,39 @@ class ProductDetailScreen extends StatelessWidget {
 
             // Botón para contactar al vendedor
             ElevatedButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/chat', arguments: product),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final token = prefs.getString('token');
+
+                if (token == null) {
+                  // Manejo si no hay token o userId
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Debe iniciar sesión para chatear'),
+                    ),
+                  );
+                  return;
+                }
+                final productoRepository = ProductRepository();
+                try {
+                  String chatId = await productoRepository.getOrCreateChat(
+                    product.id,
+                    product.seller!.id,
+                    token,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatDetailScreen(chatId: chatId),
+                    ),
+                  );
+                } catch (e) {
+                  // Manejo de error
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al iniciar chat: $e')),
+                  );
+                }
+              },
               child: const Text('Contactar al Vendedor'),
             ),
           ],

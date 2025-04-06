@@ -20,38 +20,42 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   late TextEditingController _messageController;
   late IO.Socket _socket;
   late StreamController<List<dynamic>> _messagesController;
-  List<dynamic> _messages = []; 
+  List<dynamic> _messages = [];
   static const String baseUrl = 'http://localhost:5000';
 
   @override
   void initState() {
-    super.initState();
-    _messageController = TextEditingController();
-    _messagesController = StreamController<List<dynamic>>();  // Inicializa el StreamController
+  super.initState();
+  _messageController = TextEditingController();
+  _messagesController = StreamController<List<dynamic>>();
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    _socket = IO.io(baseUrl, {
-      'transports': ['websocket'],
-      'autoConnect': false,
-      'auth': {
-        'token': authProvider.token,
-      }
-    });
+  final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  _socket = IO.io(baseUrl, {
+    'transports': ['websocket'],
+    'autoConnect': false,
+    'auth': {
+      'token': authProvider.token,
+    }
+  });
 
-    // Conectar al socket y unirse al chat
-    _socket.connect();
-    _socket.on('newMessage', (data) {
-      // Agregar el nuevo mensaje a la lista y emitir la actualización
-      setState(() {
-        _messages.insert(0, data);  // Insertar el mensaje al principio
-        _messagesController.add(_messages);  // Emitir la lista actualizada
-      });
-    });
+  _socket.connect();
+  _socket.on('connect', (_) {
+    _socket.emit('joinChat', widget.chatId);
+  });
 
-    _socket.on('connect', (_) {
-      _socket.emit('joinChat', widget.chatId); // Unirse al chat
+  _socket.on('newMessage', (data) {
+    setState(() {
+      _messages.insert(0, data);
     });
-  }
+  });
+
+  // Cargar mensajes iniciales
+  fetchChatMessages().then((messages) {
+    setState(() {
+      _messages = messages.reversed.toList(); // Reversa si quieres ver los más recientes abajo
+    });
+  });
+}
 
   @override
   void dispose() {
@@ -129,95 +133,90 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       appBar: AppBar(
         title: const Text('Detalles del Chat'),
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: fetchChatMessages(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(child: Text('No hay mensajes en este chat.'));
-          } else {
-            final messages = snapshot.data!;
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              reverse: true, // Opcional: muestra los mensajes nuevos abajo
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                final isSender =
+                    message['sender']['_id'] == authProvider.userId;
 
-            return Column(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Align(
+                    alignment:
+                        isSender ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSender ? Colors.blue[100] : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment:
+                            isSender
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message['content'],
+                            style: TextStyle(
+                              color: isSender ? Colors.black : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            message['sender']['name'],
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  isSender
+                                      ? Colors.blue[800]
+                                      : Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            'hace ${DateTime.now().difference(DateTime.parse(message['createdAt'])).inMinutes} minutos',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      final isSender = message['sender']['_id'] == authProvider.userId;
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Align(
-                          alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSender ? Colors.blue[100] : Colors.grey[300],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              crossAxisAlignment:
-                                  isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  message['content'],
-                                  style: TextStyle(
-                                    color: isSender ? Colors.black : Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  message['sender']['name'],
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isSender ? Colors.blue[800] : Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  // Aquí puedes formatear la fecha de tu mensaje
-                                  'hace ${DateTime.now().difference(DateTime.parse(message['createdAt'])).inMinutes} minutos',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                  child: TextField(
+                    controller: _messageController,
+                    decoration: const InputDecoration(
+                      hintText: 'Escribe un mensaje...',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: const InputDecoration(
-                            hintText: 'Escribe un mensaje...',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: _sendMessage,
-                      ),
-                    ],
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
                 ),
               ],
-            );
-          }
-        },
+            ),
+          ),
+        ],
       ),
     );
   }

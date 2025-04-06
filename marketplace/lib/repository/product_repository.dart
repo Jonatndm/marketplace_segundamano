@@ -116,4 +116,18 @@ class ProductRepository {
       throw Exception('Failed to update product: $error');
     }
   }
+
+   Future<String> getOrCreateChat(
+    String productId,
+    String sellerId,
+    String token,
+  ) async
+  {
+    try{
+      return await _productService.getOrCreateChat(productId, sellerId, token);
+    }
+    catch(error){
+      throw Exception('Error al crear o obtener chat');
+    }
+  }
 }
