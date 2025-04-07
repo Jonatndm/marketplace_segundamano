@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:marketplace/providers/auth_provider.dart';
+import 'package:marketplace/views/chat/time_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'dart:convert';
-
 
 class ChatDetailScreen extends StatefulWidget {
   final String chatId;
@@ -25,37 +25,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   void initState() {
-  super.initState();
-  _messageController = TextEditingController();
-  _messagesController = StreamController<List<dynamic>>();
+    super.initState();
+    _messageController = TextEditingController();
+    _messagesController = StreamController<List<dynamic>>();
 
-  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-  _socket = IO.io(baseUrl, {
-    'transports': ['websocket'],
-    'autoConnect': false,
-    'auth': {
-      'token': authProvider.token,
-    }
-  });
-
-  _socket.connect();
-  _socket.on('connect', (_) {
-    _socket.emit('joinChat', widget.chatId);
-  });
-
-  _socket.on('newMessage', (data) {
-    setState(() {
-      _messages.insert(0, data);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    _socket = IO.io(baseUrl, {
+      'transports': ['websocket'],
+      'autoConnect': false,
+      'auth': {'token': authProvider.token},
     });
-  });
 
-  // Cargar mensajes iniciales
-  fetchChatMessages().then((messages) {
-    setState(() {
-      _messages = messages.reversed.toList(); // Reversa si quieres ver los más recientes abajo
+    _socket.connect();
+    _socket.on('connect', (_) {
+      _socket.emit('joinChat', widget.chatId);
     });
-  });
-}
+
+    _socket.on('newMessage', (data) {
+      setState(() {
+        _messages.insert(0, data);
+      });
+    });
+
+    // Cargar mensajes iniciales
+    fetchChatMessages().then((messages) {
+      setState(() {
+        _messages =
+            messages.reversed
+                .toList(); // Reversa si quieres ver los más recientes abajo
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -75,9 +75,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     final response = await http.get(
       Uri.parse('$baseUrl/api/chat/${widget.chatId}/messages'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -101,9 +99,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: json.encode({
-        'content': content,
-      }),
+      body: json.encode({'content': content}),
     );
 
     if (response.statusCode == 200) {
@@ -127,12 +123,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context); // Aquí se obtiene el authProvider
+    final authProvider = Provider.of<AuthProvider>(
+      context,
+    ); // Aquí se obtiene el authProvider
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalles del Chat'),
-      ),
+      appBar: AppBar(title: const Text('Detalles del Chat')),
       body: Column(
         children: [
           Expanded(
@@ -182,7 +178,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             ),
                           ),
                           Text(
-                            'hace ${DateTime.now().difference(DateTime.parse(message['createdAt'])).inMinutes} minutos',
+                            formatearTiempoTranscurrido(
+                              DateTime.parse(message['createdAt']),
+                            ),
                             style: const TextStyle(
                               fontSize: 10,
                               color: Colors.grey,

@@ -20,6 +20,8 @@ class LoginScreenState extends State<LoginScreen> {
   final AuthRepository _authRepository = AuthRepository();
   bool _isLoading = false;
 
+  bool _obscurePassword = true;
+
   void _login() async {
     final email = emailController.text;
     final password = passwordController.text;
@@ -35,16 +37,20 @@ class LoginScreenState extends State<LoginScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final authData = await _authRepository.login(email, password, authProvider);
+      final authData = await _authRepository.login(
+        email,
+        password,
+        authProvider,
+      );
       if (authData != null) {
         // Navegar a la pantalla de inicio
         if (mounted) {
           Navigator.pushReplacementNamed(context, Routes.home);
         }
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Email y/o Contraseña incorrecta')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email y/o Contraseña incorrecta')),
+        );
       }
     } catch (error) {
       if (mounted) {
@@ -63,7 +69,10 @@ class LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ReMarket", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+        title: Text(
+          "ReMarket",
+          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
@@ -117,13 +126,26 @@ class LoginScreenState extends State<LoginScreen> {
                             controller: emailController,
                           ),
                           TextFormField(
-                            obscureText: true,
+                            obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               icon: const Icon(
                                 Icons.lock_outline_rounded,
                                 color: Colors.grey,
                               ),
                               labelText: 'Password',
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
                             ),
                             controller: passwordController,
                           ),
@@ -168,7 +190,7 @@ class LoginScreenState extends State<LoginScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        backgroundColor: Colors.indigo
+                        backgroundColor: Colors.indigo,
                       ),
                       child:
                           _isLoading
@@ -177,8 +199,8 @@ class LoginScreenState extends State<LoginScreen> {
                                 "Loguearse",
                                 style: TextStyle(
                                   fontSize: 15,
-                                  color: Colors.white
-                                  ),
+                                  color: Colors.white,
+                                ),
                               ),
                     ),
                     const SizedBox(height: 15),

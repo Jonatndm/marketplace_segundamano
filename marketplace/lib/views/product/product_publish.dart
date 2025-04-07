@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:marketplace/repository/product_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:marketplace/models/product.dart'; // Asegúrate de importar el modelo Product
+import 'package:marketplace/models/product.dart';
 
 class PublishProductScreen extends StatefulWidget {
   final Product? product;
@@ -22,7 +22,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
 
   String _title = '';
   String _description = '';
-  double _price = 0.0;
+  double? _price;
   double? _latitude;
   double? _longitude;
   List<String> _categories = ['Electrónica'];
@@ -41,14 +41,15 @@ class PublishProductScreenState extends State<PublishProductScreen> {
       _existingImageUrls = widget.product!.images;
 
       // Cargar la ubicación del producto (si está disponible)
-      if (widget.product!.location['coordinates'] != null && widget.product!.location['coordinates'].isNotEmpty) {
-        _latitude = widget.product!.location['coordinates'][1];  // Latitud
+      if (widget.product!.location['coordinates'] != null &&
+          widget.product!.location['coordinates'].isNotEmpty) {
+        _latitude = widget.product!.location['coordinates'][1]; // Latitud
         _longitude = widget.product!.location['coordinates'][0]; // Longitud
       }
     } else {
-      _getLocation();  // Solo obtener la ubicación si es un producto nuevo
+      _getLocation(); // Solo obtener la ubicación si es un producto nuevo
     }
-}
+  }
 
   // Método para obtener la ubicación
   Future<void> _getLocation() async {
@@ -143,7 +144,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
           await _productRepository.createProduct(
             name: _title,
             description: _description,
-            price: _price,
+            price: _price!,
             latitude: _latitude!,
             longitude: _longitude!,
             categories: _categories,
@@ -162,7 +163,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
             productId: widget.product!.id,
             name: _title,
             description: _description,
-            price: _price,
+            price: _price!,
             categories: _categories,
             imagePaths: imagePaths,
             token: token,
@@ -179,14 +180,16 @@ class PublishProductScreenState extends State<PublishProductScreen> {
         setState(() {
           _images.clear();
         });
-        if(widget.product != null){
+        if (widget.product != null) {
           Navigator.pop(context);
         }
       } catch (error) {
         if (mounted) {
           print(error);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al crear/actualizar el producto: $error')),
+            SnackBar(
+              content: Text('Error al crear/actualizar el producto: $error'),
+            ),
           );
         }
       }
@@ -197,7 +200,9 @@ class PublishProductScreenState extends State<PublishProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.product == null ? 'Publicar Producto' : 'Editar Producto'),
+        title: Text(
+          widget.product == null ? 'Publicar Producto' : 'Editar Producto',
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -212,9 +217,9 @@ class PublishProductScreenState extends State<PublishProductScreen> {
               SizedBox(height: 10),
               _images.length + _existingImageUrls.length < 5
                   ? ElevatedButton(
-                      onPressed: _pickImages,
-                      child: Text('Seleccionar imágenes'),
-                    )
+                    onPressed: _pickImages,
+                    child: Text('Seleccionar imágenes'),
+                  )
                   : Text('Has alcanzado el límite de 5 imágenes'),
               SizedBox(height: 10),
               GridView.builder(
@@ -232,7 +237,10 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                     children: [
                       isNewImage
                           ? Image.file(_images[index], fit: BoxFit.cover)
-                          : Image.network(_existingImageUrls[index - _images.length], fit: BoxFit.cover),
+                          : Image.network(
+                            _existingImageUrls[index - _images.length],
+                            fit: BoxFit.cover,
+                          ),
                       Positioned(
                         top: 0,
                         right: 0,
@@ -286,7 +294,7 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                   labelText: 'Precio',
                   border: OutlineInputBorder(),
                 ),
-                initialValue: _price.toString(),
+                initialValue: _price?.toString() ?? '',
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -308,13 +316,15 @@ class PublishProductScreenState extends State<PublishProductScreen> {
                   border: OutlineInputBorder(),
                 ),
                 value: _categories.isNotEmpty ? _categories.first : null,
-                items: ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros']
-                    .map((category) {
-                  return DropdownMenuItem(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
+                items:
+                    ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Otros'].map((
+                      category,
+                    ) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _categories = [value!];
@@ -323,10 +333,13 @@ class PublishProductScreenState extends State<PublishProductScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
+                key: Key('submit_button'),
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
                 child: Text(
-                  widget.product == null ? 'Publicar Producto' : 'Guardar Cambios',
+                  widget.product == null
+                      ? 'Publicar Producto'
+                      : 'Guardar Cambios',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
